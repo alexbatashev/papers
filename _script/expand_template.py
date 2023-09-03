@@ -36,6 +36,11 @@ with open(args.input, 'r') as f:
 
     string = string.replace("%%DIRNAME%%", substitutions["directory"])
 
+    if len(substitutions["class_options"]) > 0:
+        string = string.replace("%%CLASSOPTS%%", "[" + ",".join(substitutions["class_options"]) + "]")
+    else:
+        string = string.replace("%%CLASSOPTS%%", "")
+
     out = open(args.output, 'w')
     out.write(string)
     out.close()

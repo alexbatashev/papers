@@ -8,12 +8,15 @@ define_paper(
   authors = [
       {
           "name": "Alexander Batashev",
-          "affiliation": "Lobachevsky State University",
+          "affiliation": "Nizhny Novgorod State University",
           "department": "Department of High Performance Computation and System Programming",
           "city": "Nizhny Novgorod",
           "country": "Russia",
           "email": "alexbatashev@gmail.com",
       }
   ],
+  class_options = {
+      "ieee": ["conference", "a4paper"],
+  },
 )
 

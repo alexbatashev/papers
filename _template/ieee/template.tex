@@ -1,12 +1,16 @@
-\documentclass[conference]{IEEEtran}
+\documentclass%%CLASSOPTS%%{IEEEtran}
 \IEEEoverridecommandlockouts
-% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
-\usepackage{cite}
+
 \usepackage{amsmath,amssymb,amsfonts}
-%\usepackage{algorithmic}
 \usepackage{graphicx}
-%\usepackage{textcomp}
+\usepackage[linesnumbered,ruled,vlined]{algorithm2e}
 \usepackage{xcolor}
+\usepackage{listings}
+\usepackage[backend=biber]{biblatex}
+\addbibresource{references.bib}
+
+\usepackage{_template/common}
+
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
@@ -32,5 +36,7 @@
 \end{IEEEkeywords}
 
 \input{%%DIRNAME%%/main.tex}
+
+\printbibliography
 
 \end{document}
