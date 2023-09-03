@@ -23,9 +23,7 @@ jobs:
         restore-keys: |
           scratch-${{ runner.os }}
     - name: build
-      env:
-        XDG_CACHE_HOME: ~/.cache/bazel-repo
-      run: bazel build //...
+      run: bazel build --config=ci //...
     - uses: actions/upload-artifact@v3
       with:
         name: papers 
