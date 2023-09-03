@@ -29,5 +29,5 @@ jobs:
     - uses: actions/upload-artifact@v3
       with:
         name: papers 
-        path: bazel-out/*.pdf 
+        path: bazel-bin/*.pdf 
 
