@@ -27,5 +27,6 @@ jobs:
     - uses: actions/upload-artifact@v3
       with:
         name: papers 
-        path: bazel-bin/*.pdf 
+        path: |
+          bazel-out/darwin-fastbuild/bin/*.pdf 
 
