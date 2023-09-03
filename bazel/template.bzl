@@ -42,20 +42,19 @@ def define_paper(name, directory, templates, title, authors, class_options = {})
 
         srcs = []
 
-        srcs += native.glob([directory + "/*.tex"])
+        srcs += native.glob([directory + "/*.tex", directory + "/*.pdf"])
         srcs += native.glob(["_template/" + tpl + "/**/*"], exclude=["_template/" + tpl + "/template.tex"])
         srcs += [
             "@//:_template/common.sty",
             "@bazel_latex//packages:biblatex",
             "@bazel_latex//packages:amsmath",
             "@bazel_latex//packages:amssymb",
-            # "@bazel_latex//packages:amsfonts",
             "@bazel_latex//packages:graphicx",
             "@bazel_latex//packages:algorithm2e",
-            #"@bazel_latex//packages:cite",
-            # "@bazel_latex//packages:textcomp",
             "@bazel_latex//packages:xcolor",
+            "@bazel_latex//packages:fontspec",
             "@bazel_latex//packages:listings",
+            "@bazel_latex//packages:tikz",
             "@//:references.bib",
         ]
 

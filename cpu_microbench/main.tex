@@ -9,6 +9,12 @@ A basic block is a linear sequence of code with no branches except to the entry 
 
 While previous studies have utilized dynamic tracing tools like DynamoRIO \cite{chenBHiveBenchmarkSuite2019} to gather basic blocks, these methods are time-consuming and limited in platform support. For instance, DynamoRIO supports x86, x64, ARM, and AArch64 \cite{brueningInfrastructureAdaptiveDynamic2003} but not RISC-V, Loongsoon, or external accelerators like GPUs. We propose an LLVM-based method to extract basic blocks across various platforms, addressing the limitations identified in earlier research.
 
+\begin{figure}[h!]
+  \centering
+  \caption{A typical modern CPU micro-architecture}
+  \includegraphics[scale=0.5]{cpu_uarch.pdf}
+\end{figure}
+
 \subsection{Automatic basic block througput measurement}
 
 Profiling arbitrary basic blocks poses significant challenges. Memory access within a basic block often leads to segmentation faults. Yishen Chen et al. \cite{chenBHiveBenchmarkSuite2019} present a novel approach to deal with load or store instructions. They use process monitoring capabilities of the modern operating systems and map physical memory pages onto a virtual address space to avoid segmentation faults. Our methodology builds on this foundation, integrating LLVM target information to ensure portability across diverse platforms.
@@ -19,13 +25,13 @@ Our toolkit's final component is dedicated to dataset construction, comprising t
 
 \subsection{Related work}
 
-The landscape of microbenchmarking and performance modeling for modern CPU microarchitectures has seen significant advancements in recent years. A variety of approaches have been proposed to address the challenges in accurately estimating the performance of basic blocks.
+The landscape of microbenchmarking and performance modeling for modern CPU micro-architectures has seen significant advancements in recent years. A variety of approaches have been proposed to address the challenges in accurately estimating the performance of basic blocks.
 
 One notable contribution is BHive, a benchmark suite and measurement framework designed specifically for validating x86-64 basic block performance models\cite{chenBHiveBenchmarkSuite2019}. Existing benchmark suites often focus on application-level performance and are not tailored for low-level basic block performance. BHive addresses this gap by providing a comprehensive set of basic blocks that are representative of real-world applications. Additionally, it includes tools for automated measurement and validation, facilitating the comparison of different performance models.
 
-Focusing on recent Intel microarchitectures, uiCA presents a methodology that combines static analysis and machine learning techniques for accurate throughput prediction of basic blocks\cite{abelUiCAAccurateThroughput2022}. Unlike approaches that aim for broad applicability, uiCA is optimized for high accuracy specifically on Intel CPUs. The authors demonstrate that their methodology outperforms existing methods, particularly for complex instruction sequences common in modern applications.
+Focusing on recent Intel micro-architectures, uiCA presents a methodology that combines static analysis and machine learning techniques for accurate throughput prediction of basic blocks\cite{abelUiCAAccurateThroughput2022}. Unlike approaches that aim for broad applicability, uiCA is optimized for high accuracy specifically on Intel CPUs. The authors demonstrate that their methodology outperforms existing methods, particularly for complex instruction sequences common in modern applications.
 
-In contrast to traditional methods that rely on analytical models or table-based approaches, Ithemal introduces a deep learning-based model for estimating basic block throughput. Traditional methods often suffer from limitations such as inaccuracy or lack of portability across different microarchitectures. Ithemal addresses these issues by employing a deep neural network trained on a large dataset of basic blocks and their corresponding throughputs, measured on real hardware. This approach achieves high accuracy and is portable across different CPU architectures.
+In contrast to traditional methods that rely on analytical models or table-based approaches, Ithemal introduces a deep learning-based model for estimating basic block throughput. Traditional methods often suffer from limitations such as inaccuracy or lack of portability across different micro-architectures. Ithemal addresses these issues by employing a deep neural network trained on a large dataset of basic blocks and their corresponding throughputs, measured on real hardware. This approach achieves high accuracy and is portable across different CPU architectures.
 
 Kerncraft introduces an analytic performance modeling tool aimed at loop kernels\cite{hammerKerncraftToolAnalytic2017}. The paper presents a tool that utilizes a roofline model to predict the performance of loop kernels on various CPU architectures. Kerncraft aims to provide insights into the performance bottlenecks and optimization opportunities for these critical sections of code.
 
@@ -112,17 +118,23 @@ The process begins with a test run of the target basic block prior to the initia
 
 Utilizing \textit{mmap}, the process maps four memory pages to every address contained within the list. If a single instruction fails to access memory on two distinct occasions, the entire basic block is considered defective, causing the profiler to terminate its operation. The selection of four pages aims to preclude page aliasing, which has the potential to induce instruction serialization. This could occur despite the CPU's capability to execute the instructions in parallel. Although this phenomenon may also be observed in real software, performance estimation tools generally operate on idealized chip models that presuppose maximum parallelism.
 
-Simultaneously, with a standard page size of 4 KiB, the allocation of four pages of memory should fit the L1 CPU cache appropriately. Refer to table \todo{Add table} to see the comparison of page size and L1 cache for modern architectures.
+Simultaneously, with a standard page size of 4 KiB, the allocation of four pages of memory should fit the L1 CPU cache appropriately. Refer to table \ref{tab:caches} to see the comparison of page size and L1 cache for modern architectures.
 
-\begin{table}[]
+\begin{table*}[!t]
+        \renewcommand{\arraystretch}{1.3}
+        \caption{A comparison of modern CPU micro-architectures cache size}
+        \centering
 	\begin{tabular}{lllllll}
+	        \hline
 		CPU name      & Manufacturer & ISA     & L1 Data cache, KB                        & L1 Instruction cache, KB & L2 cache, MB & L3 cache, MB \\
+		\hline
 		EPYC 9354P    & AMD          & x86\_64 & 32                                       & 32                       & 32           & 256          \\
 		Ryzen 9 7950X & AMD          & x86\_64 & 32                                       & 32                       & 16           & 64           \\
 		i9-13900K     & Intel        & x86\_64 & \textbackslash{}todo\{No official data\} &                          &              & 36           \\
 		JH7110        & StarFive     & RISC-V  & 32                                       & 32                       & 2            & N/A
 	\end{tabular}
-\end{table}
+        \label{tab:caches}
+\end{table*}
 
 \subsection{Profiling methodology}
 
