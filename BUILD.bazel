@@ -1,0 +1,19 @@
+load("//bazel:template.bzl", "define_paper")
+
+define_paper(
+  name = "on_cpu_microbenchmarking",
+  directory = "cpu_microbench",
+  templates = ["ieee"],
+  title = "On micro-benchmarking of modern CPU architecture",
+  authors = [
+      {
+          "name": "Alexander Batashev",
+          "affiliation": "Lobachevsky State University",
+          "department": "Department of High Performance Computation and System Programming",
+          "city": "Nizhny Novgorod",
+          "country": "Russia",
+          "email": "alexbatashev@gmail.com",
+      }
+  ],
+)
+

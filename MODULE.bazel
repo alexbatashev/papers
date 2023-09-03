@@ -1,0 +1,18 @@
+module(name = "papers")
+
+bazel_dep(name = "platforms", version = "0.0.7")
+bazel_dep(name = "rules_foreign_cc", version = "0.9.0")
+bazel_dep(name = "rules_python", version = "0.25.0")
+
+non_module_dependencies = use_extension("//bazel:dependencies_ext.bzl", "non_module_dependencies")
+use_repo(non_module_dependencies, "bazel_latex")
+
+latex_repositories = use_extension("//bazel:repos_ext.bzl", "non_module_dependencies")
+use_repo(latex_repositories, "bazel_latex_latexrun", "ghost_script_source")
+
+register_toolchains(
+    "@bazel_latex//:latex_toolchain_aarch64-darwin",
+    "@bazel_latex//:latex_toolchain_amd64-freebsd",
+    "@bazel_latex//:latex_toolchain_x86_64-darwin",
+    "@bazel_latex//:latex_toolchain_x86_64-linux",
+)
