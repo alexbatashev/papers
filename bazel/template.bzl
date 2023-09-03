@@ -17,27 +17,11 @@ def define_paper(name, directory, templates, title, authors, class_options = {})
         
         string_parameters = json.encode(parameters)
 
-        parameters_draft = {
-          "title": title,
-          "authors": authors,
-          "directory": directory,
-          "class_options": class_opts + ["draft"]
-        }
-        
-        string_parameters_draft = json.encode(parameters_draft)
-
         native.genrule(
             name = name + "_template_" + tpl,
             outs = [name + "_main_" + tpl + ".tex"],
             srcs = ["_template/" + tpl + "/template.tex", "_script/expand_template.py"],
             cmd = "python _script/expand_template.py --input " + "_template/" + tpl + "/template.tex" + " --output $@ --args '" + string_parameters + "'",
-        )
-
-        native.genrule(
-            name = name + "_template_" + tpl + "_draft",
-            outs = [name + "_main_" + tpl + "_draft" + ".tex"],
-            srcs = ["_template/" + tpl + "/template.tex", "_script/expand_template.py"],
-            cmd = "python _script/expand_template.py --input " + "_template/" + tpl + "/template.tex" + " --output $@ --args '" + string_parameters_draft + "'",
         )
 
         srcs = []
@@ -66,10 +50,3 @@ def define_paper(name, directory, templates, title, authors, class_options = {})
             main = name + "_main_" + tpl + ".tex",
         )
 
-        latex_document(
-            name = name + "_" + tpl + "_draft",
-            srcs = srcs,
-            bib_tool = "biber",
-            format = "pdf",
-            main = name + "_main_" + tpl + "_draft" + ".tex",
-        )

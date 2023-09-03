@@ -10,21 +10,21 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
     - uses: actions/checkout@v3
-    - name: setup bazelisk
-      uses: doppelganger113/bazelisk-setup-action@v1.0.5
-    - name: setup fonts
-      run: sudo apt update && sudo apt -yqq install ttf-mscorefonts-installer
     - name: cache
       uses: actions/cache@v3
       with:
-        path: ./bzl-cache
+        path: |
+          "~/.cache/bazel"
+          "~/.cache/bazel-repo"
         key: scratch-${{ runner.os }}-${{ github.sha }}
         restore-keys: |
           scratch-${{ runner.os }}
     - name: build
+      env:
+        XDG_CACHE_HOME: ~/.cache/bazel-repo
       run: bazel build //...
     - uses: actions/upload-artifact@v3
       with:
