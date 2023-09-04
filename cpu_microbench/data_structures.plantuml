@@ -1,0 +1,64 @@
+@startuml
+struct MCNode {
+  nodeId : UInt16
+  opcode : UInt32
+  isLoad : Bool
+  isStore : Bool
+  isBarrier : Bool
+  isAtomic : Bool
+  isVector : Bool
+  isCompute : Bool
+  isFloat : Bool
+  isVirtualRoot : Bool
+}
+
+struct MCEdge {
+  from : UInt16
+  to : UInt16
+  isDataDependency : Bool
+}
+
+struct MCGraph {
+  maxOpcode : UInt32
+  hasVirtualRoot : Bool
+  source : Text
+  nodes : List(MCNode)
+  edges : List(MCEdge)
+}
+
+struct MCSample {
+  failed : Bool
+  cycles : UInt64
+  instructions : UInt64
+  microOps : UInt64
+  cacheMisses : UInt16
+  contextSwitches : UInt16
+  numRepeat : UInt16
+}
+
+struct MCMetrics {
+  measuredCycles : UInt64
+  measuredMicroOps : UInt64
+  numRepeat : UInt16
+  source : Text
+  noiseSamples : List(MCSample)
+  workloadSamples : List(MCSample)
+}
+
+struct MCDataPiece {
+  metrics : Metrics.MCMetrics
+  graph : Graph.MCGraph
+  id : Text
+}
+
+struct MCDataset {
+  data : List(MCDataPiece)
+}
+
+MCGraph <|-- MCNode
+MCGraph <|-- MCEdge
+MCMetrics <|-- MCSample
+MCDataPiece <|-- MCGraph
+MCDataPiece <|-- MCMetrics
+MCDataset <|-- MCDataPiece
+@enduml

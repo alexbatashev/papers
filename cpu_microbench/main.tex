@@ -244,66 +244,11 @@ $cycles = min(cycles^{workload}_i) - min(cycles^{noise}_j) \forall i, j$, while 
 
 The entire dataset is serialized using the Cap'n'Proto format, allowing for language-agnostic usage. To further facilitate use of the dataset, we provide bindings for both C++ and Python, thereby ensuring seamless integration with popular deep learning frameworks. Below, we show the data structures employed to encapsulate the graph, measurements, and the complete dataset.
 
-\begin{lstlisting}
-struct MCNode {
-  nodeId @0 : UInt16;
-  opcode @1 : UInt32;
-  isLoad @2 : Bool;
-  isStore @3 : Bool;
-  isBarrier @4 : Bool;
-  isAtomic @5 : Bool;
-  isVector @6 : Bool;
-  isCompute @7 : Bool;
-  isFloat @8 : Bool;
-  isVirtualRoot @9 : Bool;
-}
-
-struct MCEdge {
-  from @0 : UInt16;
-  to @1 : UInt16;
-  isDataDependency @2 : Bool;
-}
-
-struct MCGraph {
-  maxOpcode @0 : UInt32;
-  hasVirtualRoot @1 : Bool;
-  source @2 : Text;
-
-  nodes @3 : List(MCNode);
-  edges @4 : List(MCEdge);
-}
-
-struct MCSample {
-  failed @0 : Bool;
-  cycles @1 : UInt64;
-  instructions @2 : UInt64;
-  microOps @3 : UInt64;
-  cacheMisses @4 : UInt16;
-  contextSwitches @5 : UInt16;
-  numRepeat @6 : UInt16;
-}
-
-struct MCMetrics {
-  measuredCycles @0 : UInt64;
-  measuredMicroOps @1 : UInt64;
-  numRepeat @2 : UInt16;
-
-  source @3 : Text;
-
-  noiseSamples @4 : List(MCSample);
-  workloadSamples @5 : List(MCSample);
-}
-
-struct MCDataPiece {
-  metrics @0 : Metrics.MCMetrics;
-  graph @1 : Graph.MCGraph;
-  id @2 : Text;
-}
-
-struct MCDataset {
-  data @0 : List(MCDataPiece);
-}
-\end{lstlisting}
+\begin{figure}[h]
+  \caption{Data structures used by the dataset construction tool}
+  \centering
+  \includegraphics[width=0.9\columnwidth]{data_structures}
+\end{figure}
 
 \section{Evaluation}
 
