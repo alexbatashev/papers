@@ -179,63 +179,78 @@ An assembly basic block dataset comprises two primary components: a graph-based 
 In this graph representation, each assembly instruction within a basic block is encapsulated as a node. Edges between nodes signify data dependencies. The opcode for each instruction is stored as an attribute of the respective node. Additionally, our dataset construction utility captures a set of features for each instruction, such as whether it performs a memory load/store operation or vector arithmetic. The utility further offers the flexibility to introduce a virtual root node or to connect all nodes as a simple path, thereby enhancing compatibility with Graph Neural Networks (GNNs). Such a structure is advantageous since many GNN layers operate on the premise of message passing and require a connected graph to facilitate effective data flow. While other edges are usually present in the graph, incorporating a virtual root node can aid in interpreting instruction performance as it can interact with other instructions within the CPU's decoder or scheduler, even when no direct dependencies are evident. If an instruction reads from and writes to the same register, a self-loop is added to the corresponding node. A pseudocode outlining this graph construction algorithm is presented in a subsequent section. We utilize an adjacency list to store the graph.
 
 \begin{algorithm}
-	\caption{Convert MC Instructions to Graph}
-	\KwIn{$mlTarget, instructions, source, maxOpcodes, addVirtualRoot, inOrderLinks$}
-	\KwOut{$graph$}
-	\BlankLine
-	$\text{Graph } graph$\;
-	$graph.source \gets source$\;
-	$graph.hasVirtualRoot \gets addVirtualRoot$\;
-	$graph.maxOpcodes \gets maxOpcodes$\;
-
-	\If{$addVirtualRoot$}{
-		$\text{NodeFeatures } features$\;
-		$features.isVirtualRoot \gets \text{true}$\;
-		$features.opcode \gets 0$\;
-		$features.nodeId \gets 0$\;
-		$graph.\text{addNode}(features)$\;
-	}
-
-	\For{$i \gets 0$ \KwTo $instructions.\text{size}() - 1$}{
-		$\text{NodeFeatures } features$\;
-		$features \gets \text{ExtractFeatures}(instructions[i], mlTarget)$\;
-		$idx \gets i + (addVirtualRoot == \text{true})$\;
-		$features.nodeId \gets idx$\;
-		$graph.\text{addNode}(features)$\;
-		\If{$i > 0 \land inOrderLinks$}{
-			$graph.\text{addEdge}(idx-1, idx, \text{EdgeFeatures}())$\;
-		}
-		\If{$addVirtualRoot$}{
-			$graph.\text{addEdge}(0, idx, \text{EdgeFeatures}())$\;
-		}
-	}
-
-	$\text{unordered\_map<unsigned, size\_t>} lastWrite$\;
-
-	\For{$i \gets 0$ \KwTo $instructions.\text{size}() - 1$}{
-		$readRegs \gets mlTarget.\text{getReadRegisters}(instructions[i])$\;
-		$writeRegs \gets mlTarget.\text{getWriteRegisters}(instructions[i])$\;
-		\ForEach{$reg \in readRegs$}{
-			\If{$\text{contains}(lastWrite, reg)$}{
-				$offset \gets (addVirtualRoot == \text{true})$\;
-				$\text{EdgeFeatures } ef$\;
-				$ef.isData \gets \text{true}$\;
-				$graph.\text{addEdge}(\text{get}(lastWrite, reg) + offset, i + offset, ef)$\;
-			}
-		}
-		\ForEach{$reg \in readRegs$}{
-			\If{$\text{contains}(writeRegs, reg)$}{
-				$offset \gets (addVirtualRoot == \text{true})$\;
-				$\text{EdgeFeatures } ef$\;
-				$ef.isData \gets \text{true}$\;
-				$graph.\text{addEdge}(i + offset, i + offset, ef)$\;
-			}
-		}
-		\ForEach{$reg \in writeRegs$}{
-			$\text{put}(lastWrite, reg, i)$\;
-		}
-	}
-	\Return $graph$\;
+\caption{Convert MC Instructions to Graph}
+\begin{algorithmic}[1]
+\small
+\linespread{0.8}\selectfont
+\Function{convertToGraph}{$mlTarget, instr, src, maxOp, addVR, inOrderLnk$}
+    \State $\text{Graph } g$
+    \State $g.src \gets src$
+    \State $g.hasVR \gets addVR$
+    \State $g.maxOp \gets maxOp$
+    
+    \If{$addVR$}
+        \State $\text{NodeFeatures } f$
+        \State $f.isVR \gets \text{true}$
+        \State $f.opcode \gets 0$
+        \State $f.nodeId \gets 0$
+        \State $g.\Call{addNode}{f}$
+    \EndIf
+    
+    \For{$i \gets 0$ \textbf{to} $instr.\Call{size}{} - 1$}
+        \State $\text{NodeFeatures } f$
+        \State $f.opcode \gets instr[i].\Call{getOpcode}{}$
+        \State $f.isLoad \gets mlTarget.\Call{isML}{instr[i]}$
+        \State $f.isStore \gets mlTarget.\Call{isMS}{instr[i]}$
+        \State $f.isBarrier \gets mlTarget.\Call{isB}{instr[i]}$
+        \State $f.isVector \gets mlTarget.\Call{isV}{instr[i]}$
+        \State $f.isCompute \gets mlTarget.\Call{isC}{instr[i]}$
+        
+        \State $idx \gets i + (addVR == \text{true})$
+        \State $f.nodeId \gets idx$
+        \State $g.\Call{addNode}{f}$
+        
+        \State $\text{EdgeFeatures } ef$
+        
+        \If{$i > 0 \land inOrderLnk$}
+            \State $g.\Call{addEdge}{idx-1, idx, ef}$
+        \EndIf
+        
+        \If{$addVR$}
+            \State $g.\Call{addEdge}{0, idx, ef}$
+        \EndIf
+    \EndFor
+    
+    \State $\text{map<unsigned, size\_t>} lastW$
+    
+    \For{$i \gets 0$ \textbf{to} $instr.\Call{size}{} - 1$}
+        \State $readR \gets mlTarget.\Call{getRR}{instr[i]}$
+        \State $writeR \gets mlTarget.\Call{getWR}{instr[i]}$
+        
+        \ForAll{$r \in readR$}
+            \State $off \gets (addVR == \text{true})$
+            
+            \If{$\Call{contains}{lastW, r}$}
+                \State $\text{EdgeFeatures } ef$
+                \State $ef.isData \gets \text{true}$
+                \State $g.\Call{addEdge}{\Call{get}{lastW, r} + off, i + off, ef}$
+            \EndIf
+            
+            \If{$\Call{contains}{writeR, r}$}
+                \State $\text{EdgeFeatures } ef$
+                \State $ef.isData \gets \text{true}$
+                \State $g.\Call{addEdge}{i + off, i + off, ef}$
+            \EndIf
+        \EndFor
+        
+        \ForAll{$r \in writeR$}
+            \State $\Call{put}{lastW, r, i}$
+        \EndFor
+    \EndFor
+    
+    \State \Return $g$
+\EndFunction
+\end{algorithmic}
 \end{algorithm}
 
 \subsection{Throughput Metrics}

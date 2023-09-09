@@ -1,0 +1,87 @@
+diff --git a/packages/BUILD.bazel b/packages/BUILD.bazel
+index c798707..9277843 100644
+--- packages/BUILD.bazel
++++ packages/BUILD.bazel
+@@ -28,6 +28,82 @@ latex_package(
+     tests = ["algorithm2e_test.tex"],
+ )
+ 
++latex_package(
++    name = "algorithmicx",
++    srcs = [
++        ":float",
++        ":ifoddpage",
++        ":ifthen",
++        ":relsize",
++        ":xspace",
++        "@texlive_texmf__texmf-dist__tex__latex__algorithmicx",
++    ],
++    tests = [],
++)
++
++latex_package(
++    name = "algorithms",
++    srcs = [
++        ":float",
++        ":ifoddpage",
++        ":ifthen",
++        ":relsize",
++        ":xspace",
++        "@texlive_texmf__texmf-dist__tex__latex__algorithms",
++    ],
++    tests = [],
++)
++
++latex_package(
++    name = "fifo-stack",
++    srcs = [
++        "@texlive_texmf__texmf-dist__tex__latex__fifo-stack",
++    ],
++    tests = [],
++)
++
++latex_package(
++    name = "varwidth",
++    srcs = [
++        "@texlive_texmf__texmf-dist__tex__latex__varwidth",
++    ],
++    tests = [],
++)
++
++latex_package(
++    name = "tabto",
++    srcs = [
++        "@texlive_texmf__texmf-dist__tex__latex__tabto-ltx",
++    ],
++    tests = [],
++)
++
++latex_package(
++    name = "tikzmark",
++    srcs = [
++        "@texlive_texmf__texmf-dist__tex__latex__tikzmark",
++    ],
++    tests = [],
++)
++
++latex_package(
++    name = "algpseudocodex",
++    srcs = [
++        ":float",
++        ":ifoddpage",
++        ":ifthen",
++        ":relsize",
++        ":xspace",
++        ":fifo-stack",
++        ":varwidth",
++        ":tabto",
++        ":tikzmark",
++        ":l3keys2e",
++        "@texlive_texmf__texmf-dist__tex__latex__algpseudocodex",
++    ],
++    tests = [],
++)
++
+ latex_package(
+     name = "amsgen",
+     srcs = [":amsmath"],
