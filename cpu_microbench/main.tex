@@ -142,7 +142,10 @@ Extracting timing information from modern superscalar pipelined architectures pr
 
 To overcome these limitations, we employ a formula suggested by Abel and Reineke\cite{abelUiCAAccurateThroughput2022}:
 
-$throughput(b) \approx \frac{cycles(b, n) - cycles(b, n')}{n - n'} (1)$
+\begin{equation}
+throughput(b) \approx \frac{cycles(b, n) - cycles(b, n')}{n - n'}
+  \label{eq:throughput}
+\end{equation}
 
 where $cycles(b, n)$ is the number of CPU cycles elapsed for a basic block unrolled with a factor of $n$, and $n < n'$. Essentially, we execute two sets of benchmark harnesses and calculate the difference between them. In this context, we refer to the shorter harness as noise and the longer one as workload. The value $n'$ is fixed and defined by user input, while $n$ is either fixed or dynamically determined by running noise harness and measuring its time $t$ in nanoseconds.
 $n = min(0.8*\frac{1000000 * n'}{t}, MaxN)$.
@@ -153,7 +156,7 @@ In addition to the cycles counter, we collect the number of instructions retired
 
 For each basic block, we perform $m$ runs for both the noise and workload harnesses. The instruction count should remain consistent across benchmark runs for the same number of basic block repetitions. If cache misses or context switches occur, the benchmark run is deemed a failure. If more than 10\% of runs in a batch fail, the entire basic block is discarded. We also compute the coefficient of variation for both noise and workload batches, discarding the basic block if either exceeds 10\%.
 
-Finally, we select the sample with the minimal number of elapsed cycles from both noise and workload batches, employing these values in formula (1). By utilizing this refined approach, we strive to obtain more accurate timing information for modern CPU architectures, accommodating their complexities and optimizing performance analysis.
+Finally, we select the sample with the minimal number of elapsed cycles from both noise and workload batches, employing these values in formula \ref{eq:throughput}. By utilizing this refined approach, we strive to obtain more accurate timing information for modern CPU architectures, accommodating their complexities and optimizing performance analysis.
 
 \subsection{Practical recommendations}
 
