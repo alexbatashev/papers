@@ -155,7 +155,7 @@ This approach helps avoid L1 instruction cache misses by limiting the maximum nu
 
 In addition to the cycles counter, we collect the number of instructions retired, cache misses, and OS context switches. Accessing these counters is done through a library we wrote called \textit{libpmu} (https://github.com/perf-toolbox/libpmu). Designed as a cross-platform tool, \textit{libpmu} interfaces with Performance Monitoring Units (PMUs) and even extends support to some unconventional architectures, such as SiFive's U74 core.
 
-For each basic block, we perform $m$ runs for both the noise and workload harnesses. The instruction count should remain consistent across benchmark runs for the same number of basic block repetitions. If cache misses or context switches occur, the benchmark run is deemed a failure. If more than 10\% of runs in a batch fail, the entire basic block is discarded. We also compute the coefficient of variation for both noise and workload batches, discarding the basic block if either exceeds 10\%.
+For each basic block, we perform $m$ runs for both the noise and workload harnesses. The instruction count should remain consistent across benchmark runs for the same number of basic block repetitions. If cache misses or context switches occur, the benchmark run is deemed a failure. If more than 10\% of runs in a batch fail, the entire basic block is discarded. We also compute the coefficient of variation for both workload batches, discarding the basic block if either exceeds 3\%.
 
 Finally, we select the sample with the minimal number of elapsed cycles from both noise and workload batches, employing these values in formula \ref{eq:throughput}. By utilizing this refined approach, we strive to obtain more accurate timing information for modern CPU architectures, accommodating their complexities and optimizing performance analysis.
 
@@ -271,7 +271,41 @@ The entire dataset is serialized using the Cap'n'Proto format, allowing for lang
 
 \section{Evaluation}
 
-\todo{Write this section}
+For evaluation we collect samples for the following workloads: x264 video codec, Clang compiler, Firefox browser's libxul library, OpenBLAS library.
+See the details about initial dataset in table \ref{tab:test_data}.
+
+\begin{table}[h]
+  \label{tab:test_data}
+  \caption{Overview of test data}
+  \begin{tabular}{llll}
+  Workload & \# of basic blocks & \# measured & \# filtered \\
+  x264     & 80939              & 0           & 0           \\
+  libxul   & 436629             & 0           & 0           \\
+  Clang    & 365343             & 0           & 0           \\
+  OpenBLAS & 54865              & 0           & 0          
+  \end{tabular}
+\end{table}
+
+\begin{figure}[h]
+  \caption{Distribution of coefficient of variation for unfiltered data capped at 5\%}
+  \centering
+  \includegraphics[width=0.9\columnwidth]{cov_distribution_zoom}
+\end{figure}
+
+\begin{figure}[h]
+  \caption{Sample basic block graph. Source of origin: libxul. Measured cycles: 1.95.}
+  \centering
+  \includegraphics[width=0.4\columnwidth]{sample_graph}
+\end{figure}
+
+\begin{lstlisting}[title={Source of the sample basic block}]
+movq	%rdi, 16(%rsp)
+addq	$8, %rdi
+movq	%rdi, 56(%rsp)
+movq	%r14, %rsi
+movl	%edx, 32(%rsp)
+movl	$1, %ecx
+\end{lstlisting}
 
 \section{Conclusion and future work}
 

@@ -26,7 +26,7 @@ def define_paper(name, directory, templates, title, authors, class_options = {})
 
         srcs = []
 
-        srcs += native.glob([directory + "/*.tex", directory + "/*.pdf"])
+        srcs += native.glob([directory + "/**/*.tex", directory + "/**/*.pdf", directory + "/**/*.png"])
         srcs += native.glob(["_template/" + tpl + "/**/*"], exclude=["_template/" + tpl + "/template.tex"])
         srcs += [
             "@//:_template/common.sty",
