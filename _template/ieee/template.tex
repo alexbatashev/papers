@@ -10,10 +10,15 @@
 \usepackage{algorithm}
 \usepackage{xcolor}
 \usepackage{listings}
+\usepackage[hidelinks]{hyperref}
 \usepackage[backend=biber]{biblatex}
 \addbibresource{references.bib}
 
 \usepackage{_template/common}
+
+\hypersetup{
+  pdftitle={%%TITLE%%}
+}
 
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
@@ -42,5 +47,10 @@
 \input{%%DIRNAME%%/main.tex}
 
 \printbibliography
+
+\IfFileExists{%%DIRNAME%%/appendix.tex}{
+\appendices
+\input{%%DIRNAME%%/appendix.tex}
+}{}
 
 \end{document}

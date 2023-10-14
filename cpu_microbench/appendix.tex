@@ -1,0 +1,104 @@
+\section{}\label{appendix:listings}
+
+\begin{lstlisting}[title={Example 1 of mispredicted basic block. Measured 3.5 cycles, llvm-mca estimation: 25.04 cycles.}]
+movq	%r12, %rdi
+movq	%rbx, %rsi
+movq	%r15, %rdx
+movq	%rax, %rcx
+addq	$8, %rsp
+popq	%rbx
+popq	%r12
+popq	%r13
+popq	%r14
+popq	%r15
+popq	%rbp
+\end{lstlisting}
+
+\begin{lstlisting}[title={Example 2 of mispredicted basic block. Measured 3.35 cycles, llvm-mca estimation: 25.03 cycles.}]
+testq	%rax, %rax
+sete	%al
+addq	$24, %rsp
+popq	%rbx
+popq	%r12
+popq	%r13
+popq	%r14
+popq	%r15
+popq	%rbp
+\end{lstlisting}
+
+\section{}
+
+\begin{algorithm}
+\caption{Convert MC Instructions to Graph}
+\begin{algorithmic}[1]
+\small
+\linespread{0.8}\selectfont
+\Function{toGraph}{$mlTgt, instr, src, addVR, inOrderLnk$}
+    \State $\text{Graph } g$
+    \State $g.src \gets src$
+    \State $g.hasVR \gets addVR$
+    
+    \If{$addVR$}
+        \State $\text{NodeFeatures } f$
+        \State $f.isVR \gets \text{true}$
+        \State $f.opcode \gets 0$
+        \State $f.nodeId \gets 0$
+        \State $g.\Call{addNode}{f}$
+    \EndIf
+    
+    \For{$i \gets 0$ \textbf{to} $instr.\Call{size}{} - 1$}
+        \State $\text{NodeFeatures } f$
+        \State $f.opcode \gets instr[i].\Call{getOpcode}{}$
+        \State $f.isLoad \gets mlTgt.\Call{isML}{instr[i]}$
+        \State $f.isStore \gets mlTgt.\Call{isMS}{instr[i]}$
+        \State $f.isBarrier \gets mlTgt.\Call{isB}{instr[i]}$
+        \State $f.isVector \gets mlTgt.\Call{isV}{instr[i]}$
+        \State $f.isCompute \gets mlTgt.\Call{isC}{instr[i]}$
+        
+        \State $idx \gets i + (addVR == \text{true})$
+        \State $f.nodeId \gets idx$
+        \State $g.\Call{addNode}{f}$
+        
+        \State $\text{EdgeFeatures } ef$
+        
+        \If{$i > 0 \land inOrderLnk$}
+            \State $g.\Call{addEdge}{idx-1, idx, ef}$
+        \EndIf
+        
+        \If{$addVR$}
+            \State $g.\Call{addEdge}{0, idx, ef}$
+        \EndIf
+    \EndFor
+    
+    \State $lastW$
+    
+    \For{$i \gets 0$ \textbf{to} $instr.\Call{size}{} - 1$}
+        \State $readR \gets mlTarget.\Call{getRR}{instr[i]}$
+        \State $writeR \gets mlTarget.\Call{getWR}{instr[i]}$
+        
+        \ForAll{$r \in readR$}
+            \State $off \gets (addVR == \text{true})$
+            
+            \If{$\Call{contains}{lastW, r}$}
+                \State $\text{EdgeFeatures } ef$
+                \State $ef.isData \gets \text{true}$
+                \State $g.\Call{addEdge}{\Call{get}{lastW, r} + off, i + off, ef}$
+            \EndIf
+            
+            \If{$\Call{contains}{writeR, r}$}
+                \State $\text{EdgeFeatures } ef$
+                \State $ef.isData \gets \text{true}$
+                \State $g.\Call{addEdge}{i + off, i + off, ef}$
+            \EndIf
+        \EndFor
+        
+        \ForAll{$r \in writeR$}
+            \State $\Call{put}{lastW, r, i}$
+        \EndFor
+    \EndFor
+    
+    \State \Return $g$
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+

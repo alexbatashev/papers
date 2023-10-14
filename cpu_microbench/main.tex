@@ -48,7 +48,7 @@ In this work we present an automatic assembly basic block dataset collection too
 	\item A profiling tool capable of benchmarking across multiple architectures. We demonstrate how to utilize existing tools for benchmarking any basic block, ensuring minimal measurement variance. Practical guidelines for setting up the profiling environment are also provided.
 	\item A dataset construction tool that employs LLVM to assess basic block dependencies, converting the data into a graph format. This dataset paves the way for the development of deep learning cost models utilizing Graph Neural Networks.
 \end{itemize}
-Our toolkit is open-source and available online: https://github.com/perf-toolbox/llvm-ml
+Our toolkit is open-source and available online: \url{https://github.com/perf-toolbox/llvm-ml}
 
 \section{Basic block extraction}
 
@@ -130,7 +130,8 @@ Simultaneously, with a standard page size of 4 KiB, the allocation of four pages
 		\hline
 		EPYC 9354P    & AMD          & x86\_64 & 32                                       & 32                       & 32           & 256          \\
 		Ryzen 9 7950X & AMD          & x86\_64 & 32                                       & 32                       & 16           & 64           \\
-		i9-13900K     & Intel        & x86\_64 & \textbackslash{}todo\{No official data\} &                          &              & 36           \\
+		Ryzen 5 3600  & AMD          & x86\_64 & 32                                       & 32                       & 3            & 32           \\
+		i9-13900K     & Intel        & x86\_64 & 48                                       & 32                       & 2            & 36           \\
 		GH200         & NVIDIA       & AArch64 & 64                                       & 64                       & 1            & 117          \\
 		JH7110        & StarFive     & RISC-V  & 32                                       & 32                       & 2            & N/A
 	\end{tabular}
@@ -149,11 +150,11 @@ throughput(b) \approx \frac{cycles(b, n) - cycles(b, n')}{n - n'}
 \end{equation}
 
 where $cycles(b, n)$ is the number of CPU cycles elapsed for a basic block unrolled with a factor of $n$, and $n < n'$. Essentially, we execute two sets of benchmark harnesses and calculate the difference between them. In this context, we refer to the shorter harness as noise and the longer one as workload. The value $n'$ is fixed and defined by user input, while $n$ is either fixed or dynamically determined by running noise harness and measuring its time $t$ in nanoseconds.
-$n = min(0.8*\frac{1000000 * n'}{t}, MaxN)$.
+$n = min(0.8 \times \frac{1000000 \times n'}{t}, MaxN)$.
 
 This approach helps avoid L1 instruction cache misses by limiting the maximum number of iterations and dynamically reducing execution time for larger basic blocks. The constant $1'000'000$ is chosen as a conservative estimation of a time slice in nanoseconds, that an OS allocates to the thread. This number was chosen in assumption that the host OS employs completely fair scheduling mechanism. To make sure the benchmark gets as close to a full time slice as possible, we yield our thread right before running the harness.
 
-In addition to the cycles counter, we collect the number of instructions retired, cache misses, and OS context switches. Accessing these counters is done through a library we wrote called \textit{libpmu} (https://github.com/perf-toolbox/libpmu). Designed as a cross-platform tool, \textit{libpmu} interfaces with Performance Monitoring Units (PMUs) and even extends support to some unconventional architectures, such as SiFive's U74 core.
+In addition to the cycles counter, we collect the number of instructions retired, cache misses, and OS context switches. Accessing these counters is done through a library we wrote called \textit{libpmu}\footnote{Source code can be found at \url{https://github.com/perf-toolbox/libpmu}}. Designed as a cross-platform tool, \textit{libpmu} interfaces with Performance Monitoring Units (PMUs) and even extends support to some unconventional architectures, such as SiFive's U74 core.
 
 For each basic block, we perform $m$ runs for both the noise and workload harnesses. The instruction count should remain consistent across benchmark runs for the same number of basic block repetitions. If cache misses or context switches occur, the benchmark run is deemed a failure. If more than 10\% of runs in a batch fail, the entire basic block is discarded. We also compute the coefficient of variation for both workload batches, discarding the basic block if either exceeds 3\%.
 
@@ -179,81 +180,6 @@ An assembly basic block dataset comprises two primary components: a graph-based 
 
 In this graph representation, each assembly instruction within a basic block is encapsulated as a node. Edges between nodes signify data dependencies. The opcode for each instruction is stored as an attribute of the respective node. Additionally, our dataset construction utility captures a set of features for each instruction, such as whether it performs a memory load/store operation or vector arithmetic. The utility further offers the flexibility to introduce a virtual root node or to connect all nodes as a simple path, thereby enhancing compatibility with Graph Neural Networks (GNNs). Such a structure is advantageous since many GNN layers operate on the premise of message passing and require a connected graph to facilitate effective data flow. While other edges are usually present in the graph, incorporating a virtual root node can aid in interpreting instruction performance as it can interact with other instructions within the CPU's decoder or scheduler, even when no direct dependencies are evident. If an instruction reads from and writes to the same register, a self-loop is added to the corresponding node. A pseudocode outlining this graph construction algorithm is presented in a subsequent section. We utilize an adjacency list to store the graph.
 
-\begin{algorithm}
-\caption{Convert MC Instructions to Graph}
-\begin{algorithmic}[1]
-\small
-\linespread{0.8}\selectfont
-\Function{convertToGraph}{$mlTarget, instr, src, maxOp, addVR, inOrderLnk$}
-    \State $\text{Graph } g$
-    \State $g.src \gets src$
-    \State $g.hasVR \gets addVR$
-    \State $g.maxOp \gets maxOp$
-    
-    \If{$addVR$}
-        \State $\text{NodeFeatures } f$
-        \State $f.isVR \gets \text{true}$
-        \State $f.opcode \gets 0$
-        \State $f.nodeId \gets 0$
-        \State $g.\Call{addNode}{f}$
-    \EndIf
-    
-    \For{$i \gets 0$ \textbf{to} $instr.\Call{size}{} - 1$}
-        \State $\text{NodeFeatures } f$
-        \State $f.opcode \gets instr[i].\Call{getOpcode}{}$
-        \State $f.isLoad \gets mlTarget.\Call{isML}{instr[i]}$
-        \State $f.isStore \gets mlTarget.\Call{isMS}{instr[i]}$
-        \State $f.isBarrier \gets mlTarget.\Call{isB}{instr[i]}$
-        \State $f.isVector \gets mlTarget.\Call{isV}{instr[i]}$
-        \State $f.isCompute \gets mlTarget.\Call{isC}{instr[i]}$
-        
-        \State $idx \gets i + (addVR == \text{true})$
-        \State $f.nodeId \gets idx$
-        \State $g.\Call{addNode}{f}$
-        
-        \State $\text{EdgeFeatures } ef$
-        
-        \If{$i > 0 \land inOrderLnk$}
-            \State $g.\Call{addEdge}{idx-1, idx, ef}$
-        \EndIf
-        
-        \If{$addVR$}
-            \State $g.\Call{addEdge}{0, idx, ef}$
-        \EndIf
-    \EndFor
-    
-    \State $\text{map<unsigned, size\_t>} lastW$
-    
-    \For{$i \gets 0$ \textbf{to} $instr.\Call{size}{} - 1$}
-        \State $readR \gets mlTarget.\Call{getRR}{instr[i]}$
-        \State $writeR \gets mlTarget.\Call{getWR}{instr[i]}$
-        
-        \ForAll{$r \in readR$}
-            \State $off \gets (addVR == \text{true})$
-            
-            \If{$\Call{contains}{lastW, r}$}
-                \State $\text{EdgeFeatures } ef$
-                \State $ef.isData \gets \text{true}$
-                \State $g.\Call{addEdge}{\Call{get}{lastW, r} + off, i + off, ef}$
-            \EndIf
-            
-            \If{$\Call{contains}{writeR, r}$}
-                \State $\text{EdgeFeatures } ef$
-                \State $ef.isData \gets \text{true}$
-                \State $g.\Call{addEdge}{i + off, i + off, ef}$
-            \EndIf
-        \EndFor
-        
-        \ForAll{$r \in writeR$}
-            \State $\Call{put}{lastW, r, i}$
-        \EndFor
-    \EndFor
-    
-    \State \Return $g$
-\EndFunction
-\end{algorithmic}
-\end{algorithm}
-
 \subsection{Throughput Metrics}
 
 The metrics component encompasses an array of measurements collected during noise and workload runs, along with the computed cycle counts and the actual number of basic block repetitions. The number of cycles is calculated as
@@ -272,13 +198,15 @@ The entire dataset is serialized using the Cap'n'Proto format, allowing for lang
 \section{Evaluation}
 
 For evaluation we collect samples for the following workloads: x264 video codec, Clang compiler, Firefox browser's libxul library, OpenBLAS library.
-See the details about initial dataset in table \ref{tab:test_data}.
+See the details about initial dataset in table \ref{tab:test_data}. 
 
 \begin{table}[h]
   \label{tab:test_data}
   \caption{Overview of test data}
   \begin{tabular}{llll}
+  \hline
   Workload & \# of basic blocks & \# measured & \# filtered \\
+  \hline
   x264     & 80939              & 44388       & 30220       \\
   libxul   & 436629             & 213733      & 158205      \\
   Clang    & 365343             & 195410      & 143043      \\
@@ -287,17 +215,30 @@ See the details about initial dataset in table \ref{tab:test_data}.
   \end{tabular}
 \end{table}
 
+For the collected dataset, we use the benchmarking tool to measure basic block latency. We use AMD Ryzen 5 3600 CPU for measurements.
+We also capture basic block throughput estimations from the \textit{llvm-mca} tool. Figure \ref{pic:cov} shows the distribution of the coefficient
+of variation for the measured data. Figure \ref{pic:lift_chart} shows the lift chart for measured throughput values compared to \textit{llvm-mca}
+estimations. The mean squared error value for this experiment was $16.8$.
+
+An example of mispredicted basic blocks can be found in appendix \ref{appendix:listings}. These examples show that \textit{llvm-mca}
+particularly struggles with stack instruction optimizations happening inside a processor core.
+
 \begin{figure}[h]
   \caption{Distribution of coefficient of variation for unfiltered data capped at 5\%}
   \centering
+  \label{pic:cov}
   \includegraphics[width=0.9\columnwidth]{cov_distribution_zoom}
 \end{figure}
 
 \begin{figure}[h]
-  \caption{Sample basic block graph. Source of origin: libxul. Measured cycles: 1.95.}
+  \caption{Lift chart for measured values vs llvm\-mca estimations capped at 35 cycles per basic block}
   \centering
-  \includegraphics[width=0.4\columnwidth]{sample_graph}
+  \label{pic:lift_chart}
+  \includegraphics[width=0.9\columnwidth]{lift_chart_35_cycles}
 \end{figure}
+
+Finally, we build a graph representation for each basic block in the dataset. Figure \ref{pic:sample_graph} shows
+an example of such a graph for a basic block snippet below.
 
 \begin{lstlisting}[title={Source of the sample basic block}]
 movq	%rdi, 16(%rsp)
@@ -308,6 +249,14 @@ movl	%edx, 32(%rsp)
 movl	$1, %ecx
 \end{lstlisting}
 
+\begin{figure}[h]
+  \caption{Sample basic block graph. Source of origin: libxul. Measured cycles: 1.95.}
+  \centering
+  \label{pic:sample_graph}
+  \includegraphics[width=0.4\columnwidth]{sample_graph}
+\end{figure}
+
 \section{Conclusion and future work}
 
 \todo{Write this section}
+
