@@ -1,13 +1,25 @@
 \section{Introduction}
-Performance modeling is a key to enabling many compiler optimizations. Vectorizers rely on cost models to make decision on whether to apply optimization or not. However, it has been shown that current cost models are inaccurate and produce misleading results. Pohl et al. \cite{pohlPortableCostModeling2019} show that current vectorization cost model of LLVM framework has little correlation with real-world measurements with a Pearson correlation coefficient of 0.55.
+Performance modeling is a key to enabling many compiler optimizations. Vectorizers rely on cost models to 
+make decision on whether to apply optimization or not. However, it has been shown that current cost models
+are inaccurate and produce misleading results. Pohl et al. \cite{pohlPortableCostModeling2019} show that
+current vectorization cost model of LLVM framework has little correlation with real-world measurements 
+with a Pearson correlation coefficient of 0.55.
 
-This paper introduces an automated toolkit designed for data mining and analysis, aiming to assist researchers in constructing more precise cost models.
+This paper introduces an automated toolkit designed for data mining and analysis, aiming to assist 
+researchers in constructing more precise cost models.
 
 \subsection{Basic block dataset collection}
 
-A basic block is a linear sequence of code with no branches except to the entry of basic block and out of it. In terms of LLVM a basic block must end with a terminator, like a branch or return to a calling procedure. However, in this research we also consider function calls or system calls to be basic block terminators.
+A basic block is a linear sequence of code with no branches except to the entry of basic block and out 
+of it. In terms of LLVM a basic block must end with a terminator, like a branch or return to a calling 
+procedure. However, in this research we also consider function calls or system calls to be basic block 
+terminators.
 
-While previous studies have utilized dynamic tracing tools like DynamoRIO \cite{chenBHiveBenchmarkSuite2019} to gather basic blocks, these methods are time-consuming and limited in platform support. For instance, DynamoRIO supports x86, x64, ARM, and AArch64 \cite{brueningInfrastructureAdaptiveDynamic2003} but not RISC-V, Loongsoon, or external accelerators like GPUs. We propose an LLVM-based method to extract basic blocks across various platforms, addressing the limitations identified in earlier research.
+While previous studies have utilized dynamic tracing tools like DynamoRIO \cite{chenBHiveBenchmarkSuite2019} 
+to gather basic blocks, these methods are time-consuming and limited in platform support. For instance, 
+DynamoRIO supports x86, x64, ARM, and AArch64 \cite{brueningInfrastructureAdaptiveDynamic2003} but not 
+RISC-V, Loongsoon, or external accelerators like GPUs. We propose an LLVM-based method to extract basic 
+blocks across various platforms, addressing the limitations identified in earlier research.
 
 \begin{figure}[h!]
   \centering
@@ -17,54 +29,134 @@ While previous studies have utilized dynamic tracing tools like DynamoRIO \cite{
 
 \subsection{Automatic basic block througput measurement}
 
-Profiling arbitrary basic blocks poses significant challenges. Memory access within a basic block often leads to segmentation faults. Yishen Chen et al. \cite{chenBHiveBenchmarkSuite2019} present a novel approach to deal with load or store instructions. They use process monitoring capabilities of the modern operating systems and map physical memory pages onto a virtual address space to avoid segmentation faults. Our methodology builds on this foundation, integrating LLVM target information to ensure portability across diverse platforms.
+Profiling arbitrary basic blocks poses significant challenges. Memory access within a basic block often 
+leads to segmentation faults. Yishen Chen et al. \cite{chenBHiveBenchmarkSuite2019} present a novel 
+approach to deal with load or store instructions. They use process monitoring capabilities of the modern 
+operating systems and map physical memory pages onto a virtual address space to avoid segmentation faults. 
+Our methodology builds on this foundation, integrating LLVM target information to ensure portability 
+across diverse platforms.
 
 \subsection{Dataset construction and analysis}
 
-Our toolkit's final component is dedicated to dataset construction, comprising two main programs. The first program processes text assembly files, converting them into a graph-based representation suitable for deep neural networks like LSTM or GNNs. We refer to these graphs as embeddings. The second program integrates embeddings with measurement results to produce a comprehensive dataset. Additionally, we offer a Python library to facilitate data analysis and ensure compatibility with platforms like Pytorch.
+Our toolkit's final component is dedicated to dataset construction, comprising two main programs. 
+The first program processes text assembly files, converting them into a graph-based representation 
+suitable for deep neural networks like LSTM or GNNs. We refer to these graphs as embeddings. 
+The second program integrates embeddings with measurement results to produce a comprehensive dataset. 
+Additionally, we offer a Python library to facilitate data analysis and ensure compatibility with 
+platforms like Pytorch.
 
 \subsection{Related work}
 
-The landscape of microbenchmarking and performance modeling for modern CPU micro-architectures has seen significant advancements in recent years. A variety of approaches have been proposed to address the challenges in accurately estimating the performance of basic blocks.
+The landscape of microbenchmarking and performance modeling for modern CPU micro-architectures has 
+seen significant advancements in recent years. A variety of approaches have been proposed to address 
+the challenges in accurately estimating the performance of basic blocks.
 
-One notable contribution is BHive, a benchmark suite and measurement framework designed specifically for validating x86-64 basic block performance models\cite{chenBHiveBenchmarkSuite2019}. Existing benchmark suites often focus on application-level performance and are not tailored for low-level basic block performance. BHive addresses this gap by providing a comprehensive set of basic blocks that are representative of real-world applications. Additionally, it includes tools for automated measurement and validation, facilitating the comparison of different performance models.
+One notable contribution is BHive, a benchmark suite and measurement framework designed specifically 
+for validating x86-64 basic block performance models\cite{chenBHiveBenchmarkSuite2019}. Existing 
+benchmark suites often focus on application-level performance and are not tailored for low-level 
+basic block performance. BHive addresses this gap by providing a comprehensive set of basic blocks 
+that are representative of real-world applications. Additionally, it includes tools for automated 
+measurement and validation, facilitating the comparison of different performance models.
 
-Focusing on recent Intel micro-architectures, uiCA presents a methodology that combines static analysis and machine learning techniques for accurate throughput prediction of basic blocks\cite{abelUiCAAccurateThroughput2022}. Unlike approaches that aim for broad applicability, uiCA is optimized for high accuracy specifically on Intel CPUs. The authors demonstrate that their methodology outperforms existing methods, particularly for complex instruction sequences common in modern applications.
+Focusing on recent Intel micro-architectures, uiCA presents a methodology that combines static analysis
+and machine learning techniques for accurate throughput prediction of basic 
+blocks\cite{abelUiCAAccurateThroughput2022}. Unlike approaches that aim for broad applicability, 
+uiCA is optimized for high accuracy specifically on Intel CPUs. The authors demonstrate that their 
+methodology outperforms existing methods, particularly for complex instruction sequences common in 
+modern applications.
 
-In contrast to traditional methods that rely on analytical models or table-based approaches, Ithemal introduces a deep learning-based model for estimating basic block throughput. Traditional methods often suffer from limitations such as inaccuracy or lack of portability across different micro-architectures. Ithemal addresses these issues by employing a deep neural network trained on a large dataset of basic blocks and their corresponding throughputs, measured on real hardware. This approach achieves high accuracy and is portable across different CPU architectures.
+In contrast to traditional methods that rely on analytical models or table-based approaches, Ithemal 
+introduces a deep learning-based model for estimating basic block throughput. Traditional methods 
+often suffer from limitations such as inaccuracy or lack of portability across different micro-architectures.
+Ithemal addresses these issues by employing a deep neural network trained on a large dataset of basic
+blocks and their corresponding throughputs, measured on real hardware. This approach achieves high 
+accuracy and is portable across different CPU architectures.
 
-Kerncraft introduces an analytic performance modeling tool aimed at loop kernels\cite{hammerKerncraftToolAnalytic2017}. The paper presents a tool that utilizes a roofline model to predict the performance of loop kernels on various CPU architectures. Kerncraft aims to provide insights into the performance bottlenecks and optimization opportunities for these critical sections of code.
+Kerncraft introduces an analytic performance modeling tool aimed at loop 
+kernels\cite{hammerKerncraftToolAnalytic2017}. The paper presents a tool that utilizes a roofline model 
+to predict the performance of loop kernels on various CPU architectures. Kerncraft aims to provide insights
+into the performance bottlenecks and optimization opportunities for these critical sections of code.
 
-Automated Instruction Stream Throughput Prediction presents a Open Source Architecture Code Analyzer, a static analysis tool for predicting the execution time of sequential loops comprising x86 instructions under the assumption of an infinite first-level cache and perfect out-of-order scheduling\cite{laukemannAutomatedInstructionStream2018}. The paper introduces a machine model, tailored for modern Intel and AMD micro-architectures by semi-automated benchmarking.
+Automated Instruction Stream Throughput Prediction presents a Open Source Architecture Code Analyzer, 
+a static analysis tool for predicting the execution time of sequential loops comprising x86 instructions
+under the assumption of an infinite first-level cache and perfect out-of-order 
+scheduling\cite{laukemannAutomatedInstructionStream2018}. The paper introduces a machine model, tailored 
+for modern Intel and AMD micro-architectures by semi-automated benchmarking.
 
-Another tool that merits attention in the context of microbenchmarking and performance modeling is LLVM-Exegesis \todo{exegesis link}. This tool is part of the LLVM compiler infrastructure and aims to empirically measure the latency and throughput of individual instructions on various CPU architectures. It generates microbenchmarks for specific instruction sequences and executes them to gather performance data. This empirical approach ensures high accuracy but is limited to the hardware on which the measurements are taken. It serves as a valuable resource for compiler optimization and can be complementary to other methods that focus on predictive modeling.
+Another tool that merits attention in the context of microbenchmarking and performance modeling is 
+LLVM-Exegesis \todo{exegesis link}. This tool is part of the LLVM compiler infrastructure and aims to 
+empirically measure the latency and throughput of individual instructions on various CPU architectures. 
+It generates microbenchmarks for specific instruction sequences and executes them to gather performance 
+data. This empirical approach ensures high accuracy but is limited to the hardware on which the measurements
+are taken. It serves as a valuable resource for compiler optimization and can be complementary to other 
+methods that focus on predictive modeling.
 
 \subsection{Contribution}
 
-In this work we present an automatic assembly basic block dataset collection tool. Specifically, we make the following contributions:
+In this work we present an automatic assembly basic block dataset collection tool. Specifically, we make 
+the following contributions:
 \begin{itemize}
-	\item An LLVM-based tool for basic block extraction, which automatically transforms binaries into a set of assembly files. This tool also performs basic filtering tasks, such as removing \textit{nop} padding or excluding basic blocks with no meaningful computation.
-
-	\item A profiling tool capable of benchmarking across multiple architectures. We demonstrate how to utilize existing tools for benchmarking any basic block, ensuring minimal measurement variance. Practical guidelines for setting up the profiling environment are also provided.
-	\item A dataset construction tool that employs LLVM to assess basic block dependencies, converting the data into a graph format. This dataset paves the way for the development of deep learning cost models utilizing Graph Neural Networks.
+	\item An LLVM-based tool for basic block extraction, which automatically transforms binaries into a set 
+        of assembly files. This tool also performs basic filtering tasks, such as removing \textit{nop} 
+        padding or excluding basic blocks with no meaningful computation.
+	\item A profiling tool capable of benchmarking across multiple architectures. We demonstrate how to utilize
+        existing tools for benchmarking any basic block, ensuring minimal measurement variance. Practical 
+        guidelines for setting up the profiling environment are also provided.
+	\item A dataset construction tool that employs LLVM to assess basic block dependencies, converting the 
+        data into a graph format. This dataset paves the way for the development of deep learning cost 
+        models utilizing Graph Neural Networks.
 \end{itemize}
+
+Figure \ref{fig:workflow} shows a complete workflow for the proposed toolkit.
+
+\begin{figure*}[h]
+  \caption{Complete toolkit workflow}
+  \centering
+  \label{fig:workflow}
+  \includegraphics[width=0.8\linewidth]{workflow}
+\end{figure*}
+
 Our toolkit is open-source and available online: \url{https://github.com/perf-toolbox/llvm-ml}
 
 \section{Basic block extraction}
 
-To provide accurate measurements of instruction latencies one must first prepare input data. There are two primary approaches for doing that: generating an artificial dataset and extracting basic blocks from real-world programms.
+To provide accurate measurements of instruction latencies one must first prepare input data. There are 
+two primary approaches for doing that: generating an artificial dataset and extracting basic blocks from
+real-world programms.
 
 \subsection{Basic block generation}
 
-The first approach is taken by \textit{llmv-exegesis} tool. For each instruction in the ISA it can generate multiple samples of assembly. Those are usually different by the generation strategy. Modern desktop CPUs often employ out-of-order execution and pipelining, which allowes them to execute multiple instructions at once, possibly, not in the order that these instructions are written in the code. In practice, that means that the CPU pipeline will have a register renaming unit, re-order buffer, and a scheduler, that can take an instruction from that buffer and dispatch it into a free port.
+The first approach is taken by \textit{llmv-exegesis} tool. For each instruction in the ISA it can 
+generate multiple samples of assembly. Those are usually different by the generation strategy. 
+Modern desktop CPUs often employ out-of-order execution and pipelining, which allowes them to execute 
+multiple instructions at once, possibly, not in the order that these instructions are written in the 
+code. In practice, that means that the CPU pipeline will have a register renaming unit, re-order buffer, 
+and a scheduler, that can take an instruction from that buffer and dispatch it into a free port.
 
-While such an optimization can greatly improve the performance of applications, it adds to the complexity of instruction benchmarking. textit{llvm-exegesis} can either generate a so-called "parallel" snippet, that can be used to estimate the number of available ports on the system, or a "serial" snippet, that can be used to measure a single instruction latency. The serialization is achieved by redirecting the output of the instruction to it's input and running that instruction in a loop. These two methodologies allow to accurately describe some of the features of modern CPU architectures. This data is used by \textit{llvm-mca} tool and LLVM compiler stack to drive some of its cost models. A similar approach is taken by PMEvo tool, which can discover instruction port mapping using genetic algorithms\cite{ritterPMEvoPortableInference2020}. However, as shown by later research, these artificial basic blocks do not allow researchers to reveal some of the more sophisticated optimizations, like macro and micro fusion. Yishen Chen et al. \cite{chenBHiveBenchmarkSuite2019} have provided an estimation of \textit{llvm-mca} tool relative error. Given a measured throughput $t$ and estimated throughput $t'$ a relative error is defined as $err(t, t') = \frac{|t - t'|}{t}$. For \textit{llvm-mca} it has been found that the maximum error value is 0.54.
+While such an optimization can greatly improve the performance of applications, it adds to the complexity 
+of instruction benchmarking. textit{llvm-exegesis} can either generate a so-called "parallel" snippet, 
+that can be used to estimate the number of available ports on the system, or a "serial" snippet, 
+that can be used to measure a single instruction latency. The serialization is achieved by redirecting 
+the output of the instruction to it's input and running that instruction in a loop. These two 
+methodologies allow to accurately describe some of the features of modern CPU architectures. 
+This data is used by \textit{llvm-mca} tool and LLVM compiler stack to drive some of its cost models. 
+A similar approach is taken by PMEvo tool, which can discover instruction port mapping using genetic 
+algorithms\cite{ritterPMEvoPortableInference2020}. However, as shown by later research, these artificial 
+basic blocks do not allow researchers to reveal some of the more sophisticated optimizations, like macro 
+and micro fusion. Yishen Chen et al. \cite{chenBHiveBenchmarkSuite2019} have provided an estimation of 
+\textit{llvm-mca} tool relative error. Given a measured throughput $t$ and estimated throughput $t'$ a 
+relative error is defined as $err(t, t') = \frac{|t - t'|}{t}$. For \textit{llvm-mca} it has been found 
+that the maximum error value is 0.54.
 
 \subsection{Dynamic extraction}
 
-Another approach, that is often used is extracting basic blocks from compiled binaries. A typical approach would be to use a dynamic binary instrumentation tool to trace the actual execution of the instructions. This is how Mendis et al. collect the dataset for training Ithemal\cite{mendisIthemalAccuratePortable2019}.
+Another approach, that is often used is extracting basic blocks from compiled binaries. A typical 
+approach would be to use a dynamic binary instrumentation tool to trace the actual execution of the 
+instructions. This is how Mendis et al. collect the dataset for training 
+Ithemal\cite{mendisIthemalAccuratePortable2019}.
 
-These tools usually work by combining both disassembler and JIT compiler technology. For example, DynamoRIO uses five-level intermediate representations to process disassembled basic blocks:
+These tools usually work by combining both disassembler and JIT compiler technology. For example, 
+DynamoRIO uses five-level intermediate representations to process disassembled basic blocks:
 \begin{itemize}
 	\item \textbf{Level 0} is the raw instruction byte stream.
 	\item \textbf{Level 1} is instructions stored as encoded bytes.
@@ -72,21 +164,53 @@ These tools usually work by combining both disassembler and JIT compiler technol
 	\item \textbf{Level 3} is fully-decoded instructions.
 	\item \textbf{Level 4} is fully-decoded instructions that have been modified.
 \end{itemize}
-DynamoRIO then re-compiles these basic blocks and executes them natively. At the end of each basic block a so-called \textit{context switch} happens, and DynamoRIO takes control back to determine and prepare the next piece of executable.
+DynamoRIO then re-compiles these basic blocks and executes them natively. At the end of each basic 
+block a so-called \textit{context switch} happens, and DynamoRIO takes control back to determine and 
+prepare the next piece of executable.
 
-The benefits of dynamic basic block extraction is that it allows to extract data in the same form as CPUs see these instruction streams. Any branch that has not been taken during application execution will not be added to the final dataset. This can be useful for binaries that contain hand-optimized pieces of code or dynamically dispatched functions for uncommon ISA extensions.
+The benefits of dynamic basic block extraction is that it allows to extract data in the same form as 
+CPUs see these instruction streams. Any branch that has not been taken during application execution 
+will not be added to the final dataset. This can be useful for binaries that contain hand-optimized 
+pieces of code or dynamically dispatched functions for uncommon ISA extensions.
 
-The downside of dynamic approach is slow performance of this method. In practice, these tools still perform disassembling, but they also require users to run heavy workloads with additional tooling overhead. Furthermore, these tools aren't always available for target platforms.
+The downside of dynamic approach is slow performance of this method. In practice, these tools still 
+perform disassembling, but they also require users to run heavy workloads with additional tooling 
+overhead. Furthermore, these tools aren't always available for target platforms.
 
 \subsection{Static extraction}
 
-As an alternative for dynamic extraction, we propose to use LLVM built-in Target framework to disassemble binaries and perform static analysis to clean up the data. To do so, we use the standard LLVM disassembly interface, iterating over sections of the given binary and trying to decode every instruction. We analyse each instruction in an online fashion. \textit{nop} instructions are skipped at this stage. When disassembler meets a block terminator instruction, such as jump, call, system call, or return, it flushes all previously disassembled instructions into an assembly text file, clears the temporary buffer and increments basic block counter. After all sections are processed, the tool performs post-processing stage. During this stage, all recorded assembly files are parsed, and broken files are removed. The tool also removes all files, that only contain a single instruction, all files that only contain loads or stores, and all files that contain variable latency instructions. Single-instruction basic blocks are not representative for the purpose of CPU scheduler modeling. This kind of basic blocks is better synthesized in a controlled fashion to uncover some instruction properties, that are hard to infer with this kind of inputs. Memory processing-only basic blocks are removed since modern CPUs can perform various kinds of optimizations, like move elimination\cite{Intel64IA322022}, and thus are not representative either. Last, variable latency instructions are also hard to accurately model. Instructions, such as division or square root, may use iterative algorithms to compute the result value, and thus their latency fully depends on the value residing in the input register. The toolkit also removes duplicates by converting all basic blocks into graph representation and removing identical graphs. This allows us to also account for similar basic blocks where automatic register allocation algorithms worked slightly differently. While the graph representation also allows to remove isomorphic graphs, we're not doing that on purpose. A different order of instructions may lead to different optimizations being triggered in the CPU pipeline even though two code pieces may be functionally identical.
+As an alternative for dynamic extraction, we propose to use LLVM built-in Target framework to 
+disassemble binaries and perform static analysis to clean up the data. To do so, we use the standard 
+LLVM disassembly interface, iterating over sections of the given binary and trying to decode every 
+instruction. We analyse each instruction in an online fashion. \textit{nop} instructions are skipped 
+at this stage. When disassembler meets a block terminator instruction, such as jump, call, system 
+call, or return, it flushes all previously disassembled instructions into an assembly text file, 
+clears the temporary buffer and increments basic block counter. After all sections are processed, 
+the tool performs post-processing stage. During this stage, all recorded assembly files are parsed, 
+and broken files are removed. The tool also removes all files, that only contain a single instruction, 
+all files that only contain loads or stores, and all files that contain variable latency instructions. 
+Single-instruction basic blocks are not representative for the purpose of CPU scheduler modeling. 
+This kind of basic blocks is better synthesized in a controlled fashion to uncover some instruction 
+properties, that are hard to infer with this kind of inputs. Memory processing-only basic blocks are 
+removed since modern CPUs can perform various kinds of optimizations, like move 
+elimination\cite{Intel64IA322022}, and thus are not representative either. Last, variable latency 
+instructions are also hard to accurately model. Instructions, such as division or square root, may 
+use iterative algorithms to compute the result value, and thus their latency fully depends on the 
+value residing in the input register. The toolkit also removes duplicates by converting all basic 
+blocks into graph representation and removing identical graphs. This allows us to also account for 
+similar basic blocks where automatic register allocation algorithms worked slightly differently. 
+While the graph representation also allows to remove isomorphic graphs, we're not doing that on purpose. 
+A different order of instructions may lead to different optimizations being triggered in the CPU pipeline 
+even though two code pieces may be functionally identical.
 
 \section{Profiling methodology}
 
 \subsection{Generating benchmark harness}
 
-In the process of generating a benchmark harness, we leverage the LLVM framework to construct a target function using LLVM Intermediate Representation (IR), subsequently executing it through the ORC JIT API. Each target function is meticulously crafted, comprising a prologue, an unrolled basic block, and an epilogue. The prologue serves three essential purposes:
+In the process of generating a benchmark harness, we leverage the LLVM framework to construct a target 
+function using LLVM Intermediate Representation (IR), subsequently executing it through the ORC JIT API. 
+Each target function is meticulously crafted, comprising a prologue, an unrolled basic block, and an 
+epilogue. The prologue serves three essential purposes:
 
 \begin{itemize}
 	\item \textbf{Preserving Register States}: It ensures that the test function can appropriately return control to the host process by saving the current register states.
@@ -112,13 +236,26 @@ sub $-128, %rsp
 
 \subsection{Arbitrary basic block execution}
 
-A fundamental obstacle in arbitrary basic block profiling is the handling of memory accesses, specifically those related to unallocated memory, which can lead to process crashes. To address this issue, we adopt the algorithm delineated by Chen et al. \cite{chenBHiveBenchmarkSuite2019}.
+A fundamental obstacle in arbitrary basic block profiling is the handling of memory accesses, specifically 
+those related to unallocated memory, which can lead to process crashes. To address this issue, we adopt 
+the algorithm delineated by Chen et al. \cite{chenBHiveBenchmarkSuite2019}.
 
-The process begins with a test run of the target basic block prior to the initiation of the profiling procedure. Should the process crash during this phase, the fault memory address is captured and added to a specific list. Subsequently, the process is restarted, and the aforementioned list is conveyed as an argument.
+The process begins with a test run of the target basic block prior to the initiation of the profiling 
+procedure. Should the process crash during this phase, the fault memory address is captured and added to 
+a specific list. Subsequently, the process is restarted, and the aforementioned list is conveyed as an 
+argument.
 
-Utilizing \textit{mmap}, the process maps four memory pages to every address contained within the list. If a single instruction fails to access memory on two distinct occasions, the entire basic block is considered defective, causing the profiler to terminate its operation. The selection of four pages aims to preclude page aliasing, which has the potential to induce instruction serialization. This could occur despite the CPU's capability to execute the instructions in parallel. Although this phenomenon may also be observed in real software, performance estimation tools generally operate on idealized chip models that presuppose maximum parallelism.
+Utilizing \textit{mmap}, the process maps four memory pages to every address contained within the list. 
+If a single instruction fails to access memory on two distinct occasions, the entire basic block is 
+considered defective, causing the profiler to terminate its operation. The selection of four pages aims 
+to preclude page aliasing, which has the potential to induce instruction serialization. This could occur 
+despite the CPU's capability to execute the instructions in parallel. Although this phenomenon may also 
+be observed in real software, performance estimation tools generally operate on idealized chip models 
+that presuppose maximum parallelism.
 
-Simultaneously, with a standard page size of 4 KiB, the allocation of four pages of memory should fit the L1 CPU cache appropriately. Refer to table \ref{tab:caches} to see the comparison of page size and L1 cache for modern architectures.
+Simultaneously, with a standard page size of 4 KiB, the allocation of four pages of memory should fit 
+the L1 CPU cache appropriately. Refer to table \ref{tab:caches} to see the comparison of page size and 
+L1 cache for modern architectures.
 
 \begin{table*}[!t]
         \renewcommand{\arraystretch}{1.3}
@@ -152,17 +289,35 @@ throughput(b) \approx \frac{cycles(b, n) - cycles(b, n')}{n - n'}
 where $cycles(b, n)$ is the number of CPU cycles elapsed for a basic block unrolled with a factor of $n$, and $n < n'$. Essentially, we execute two sets of benchmark harnesses and calculate the difference between them. In this context, we refer to the shorter harness as noise and the longer one as workload. The value $n'$ is fixed and defined by user input, while $n$ is either fixed or dynamically determined by running noise harness and measuring its time $t$ in nanoseconds.
 $n = min(0.8 \times \frac{1000000 \times n'}{t}, MaxN)$.
 
-This approach helps avoid L1 instruction cache misses by limiting the maximum number of iterations and dynamically reducing execution time for larger basic blocks. The constant $1'000'000$ is chosen as a conservative estimation of a time slice in nanoseconds, that an OS allocates to the thread. This number was chosen in assumption that the host OS employs completely fair scheduling mechanism. To make sure the benchmark gets as close to a full time slice as possible, we yield our thread right before running the harness.
+This approach helps avoid L1 instruction cache misses by limiting the maximum number of iterations and 
+dynamically reducing execution time for larger basic blocks. The constant $1'000'000$ is chosen as a 
+conservative estimation of a time slice in nanoseconds, that an OS allocates to the thread. This number 
+was chosen in assumption that the host OS employs completely fair scheduling mechanism. To make sure the 
+benchmark gets as close to a full time slice as possible, we yield our thread right before running the 
+harness.
 
-In addition to the cycles counter, we collect the number of instructions retired, cache misses, and OS context switches. Accessing these counters is done through a library we wrote called \textit{libpmu}\footnote{Source code can be found at \url{https://github.com/perf-toolbox/libpmu}}. Designed as a cross-platform tool, \textit{libpmu} interfaces with Performance Monitoring Units (PMUs) and even extends support to some unconventional architectures, such as SiFive's U74 core.
+In addition to the cycles counter, we collect the number of instructions retired, cache misses, and OS 
+context switches. Accessing these counters is done through a library we wrote called 
+\textit{libpmu}\footnote{Source code can be found at \url{https://github.com/perf-toolbox/libpmu}}. 
+Designed as a cross-platform tool, \textit{libpmu} interfaces with Performance Monitoring Units (PMUs) 
+and even extends support to some unconventional architectures, such as SiFive's U74 core.
 
-For each basic block, we perform $m$ runs for both the noise and workload harnesses. The instruction count should remain consistent across benchmark runs for the same number of basic block repetitions. If cache misses or context switches occur, the benchmark run is deemed a failure. If more than 10\% of runs in a batch fail, the entire basic block is discarded. We also compute the coefficient of variation for both workload batches, discarding the basic block if either exceeds 3\%.
+For each basic block, we perform $m$ runs for both the noise and workload harnesses. The instruction 
+count should remain consistent across benchmark runs for the same number of basic block repetitions. 
+If cache misses or context switches occur, the benchmark run is deemed a failure. If more than 10\% of 
+runs in a batch fail, the entire basic block is discarded. We also compute the coefficient of variation 
+for both workload batches, discarding the basic block if either exceeds 3\%.
 
-Finally, we select the sample with the minimal number of elapsed cycles from both noise and workload batches, employing these values in formula \ref{eq:throughput}. By utilizing this refined approach, we strive to obtain more accurate timing information for modern CPU architectures, accommodating their complexities and optimizing performance analysis.
+Finally, we select the sample with the minimal number of elapsed cycles from both noise and workload 
+batches, employing these values in formula \ref{eq:throughput}. By utilizing this refined approach, 
+we strive to obtain more accurate timing information for modern CPU architectures, accommodating their 
+complexities and optimizing performance analysis.
 
 \subsection{Practical recommendations}
 
-While conducting experiments, we identified several essential preconditions that must be fulfilled by the testing environment to guarantee stable and reliable results. These prerequisites revolve around system configurations to minimize variables that may introduce inconsistencies:
+While conducting experiments, we identified several essential preconditions that must be fulfilled by 
+the testing environment to guarantee stable and reliable results. These prerequisites revolve around 
+system configurations to minimize variables that may introduce inconsistencies:
 
 \begin{itemize}
 	\item \textbf{Disabling Simultaneous Multiprocessing (SMT)}: Also known as Hyperthreading, disabling this feature ensures that multiple threads do not run on the same physical core simultaneously, thereby eliminating any interference. For Linux systems, this can be achieved by appending the \textit{nosmt} flag during the kernel boot process.
@@ -170,24 +325,47 @@ While conducting experiments, we identified several essential preconditions that
 	\item \textbf{Isolating CPU cores}: Isolation of CPU cores ensures that other processes running on the system do not interfere with the core's L1 cache, either by flushing or corrupting it. Our benchmarking tool is designed to bind the benchmark harness to specific threads, defined by user input, thereby achieving precise control. For Linux systems, core isolation can be implemented by passing the \textit{isolcpus=1,2,3,...,n} flag during kernel boot.
 \end{itemize}
 
-These precautions serve to create a more uniform testing environment, minimizing the potential for extraneous factors to influence the outcome. By adhering to these guidelines, we strive to generate benchmark results that accurately reflect the performance characteristics under investigation.
+These precautions serve to create a more uniform testing environment, minimizing the potential for 
+extraneous factors to influence the outcome. By adhering to these guidelines, we strive to generate 
+benchmark results that accurately reflect the performance characteristics under investigation.
 
 \section{Dataset construction}
 
-An assembly basic block dataset comprises two primary components: a graph-based representation of basic blocks and their associated throughput measurements.
+An assembly basic block dataset comprises two primary components: a graph-based representation of 
+basic blocks and their associated throughput measurements.
 
 \subsection{Graph-Based Representation of Basic Blocks}
 
-In this graph representation, each assembly instruction within a basic block is encapsulated as a node. Edges between nodes signify data dependencies. The opcode for each instruction is stored as an attribute of the respective node. Additionally, our dataset construction utility captures a set of features for each instruction, such as whether it performs a memory load/store operation or vector arithmetic. The utility further offers the flexibility to introduce a virtual root node or to connect all nodes as a simple path, thereby enhancing compatibility with Graph Neural Networks (GNNs). Such a structure is advantageous since many GNN layers operate on the premise of message passing and require a connected graph to facilitate effective data flow. While other edges are usually present in the graph, incorporating a virtual root node can aid in interpreting instruction performance as it can interact with other instructions within the CPU's decoder or scheduler, even when no direct dependencies are evident. If an instruction reads from and writes to the same register, a self-loop is added to the corresponding node. A pseudocode outlining this graph construction algorithm is presented in a subsequent section. We utilize an adjacency list to store the graph.
+In this graph representation, each assembly instruction within a basic block is encapsulated as a 
+node. Edges between nodes signify data dependencies. The opcode for each instruction is stored as 
+an attribute of the respective node. Additionally, our dataset construction utility captures a set 
+of features for each instruction, such as whether it performs a memory load/store operation or vector 
+arithmetic. The utility further offers the flexibility to introduce a virtual root node or to connect 
+all nodes as a simple path, thereby enhancing compatibility with Graph Neural Networks (GNNs). Such 
+a structure is advantageous since many GNN layers operate on the premise of message passing and require 
+a connected graph to facilitate effective data flow. While other edges are usually present in the graph, 
+incorporating a virtual root node can aid in interpreting instruction performance as it can interact with 
+other instructions within the CPU's decoder or scheduler, even when no direct dependencies are evident. 
+If an instruction reads from and writes to the same register, a self-loop is added to the corresponding 
+node. A pseudocode outlining this graph construction algorithm is presented in a subsequent section. 
+We utilize an adjacency list to store the graph.
 
 \subsection{Throughput Metrics}
 
-The metrics component encompasses an array of measurements collected during noise and workload runs, along with the computed cycle counts and the actual number of basic block repetitions. The number of cycles is calculated as
-$cycles = min(cycles^{workload}_i) - min(cycles^{noise}_j) \forall i, j$, while the number of runs is derived as $N_{runs} = runs(argmin(cycles^{workload}_i)) - runs(argmin(cycles^{noise}_j)) \forall i, j$. Subsequently, the reciprocal throughput for the basic block can be computed as $throughput = \frac{cycles}{N_{runs}}$.
+The metrics component encompasses an array of measurements collected during noise and workload runs, 
+along with the computed cycle counts and the actual number of basic block repetitions. The number of 
+cycles is calculated as
+$cycles = min(cycles^{workload}_i) - min(cycles^{noise}_j) \forall i, j$, while the number of runs 
+is derived as $N_{runs} = runs(argmin(cycles^{workload}_i)) - runs(argmin(cycles^{noise}_j)) \forall i, j$. 
+Subsequently, the reciprocal throughput for the basic block can be computed as 
+$throughput = \frac{cycles}{N_{runs}}$.
 
 \subsection{Data Storage and Language Bindings}
 
-The entire dataset is serialized using the Cap'n'Proto format, allowing for language-agnostic usage. To further facilitate use of the dataset, we provide bindings for both C++ and Python, thereby ensuring seamless integration with popular deep learning frameworks. Below, we show the data structures employed to encapsulate the graph, measurements, and the complete dataset.
+The entire dataset is serialized using the Cap'n'Proto format, allowing for language-agnostic usage. 
+To further facilitate use of the dataset, we provide bindings for both C++ and Python, thereby ensuring 
+seamless integration with popular deep learning frameworks. Below, we show the data structures employed 
+to encapsulate the graph, measurements, and the complete dataset.
 
 \begin{figure}[h]
   \caption{Data structures used by the dataset construction tool}
@@ -197,12 +375,21 @@ The entire dataset is serialized using the Cap'n'Proto format, allowing for lang
 
 \section{Evaluation}
 
-For evaluation we collect samples for the following workloads: x264 video codec, Clang compiler, Firefox browser's libxul library, OpenBLAS library.
-See the details about initial dataset in table \ref{tab:test_data}. 
+The purpose of evaluation is to assess the accuracy and functional correctness of the proposed toolkit.
+We also compare the collected data against \textit{llvm-mca} static estimations.
 
-\begin{table}[h]
-  \label{tab:test_data}
+\subsection{Methodology}
+We collect samples from various workloads and measure basic block latency using a benchmarking tool.
+The metrics for evaluation include the mean squared error (MSE) and the coefficient of variation.
+
+\subsection{Dataset}
+For evaluation, we collect samples for the following workloads: x264 video codec, Clang compiler, 
+Firefox browser's libxul library, and OpenBLAS library. The details about the initial dataset are 
+shown in Table \ref{tab:test_data}.
+
+\begin{table}[htbp]
   \caption{Overview of test data}
+  \label{tab:test_data}
   \begin{tabular}{llll}
   \hline
   Workload & \# of basic blocks & \# measured & \# filtered \\
@@ -215,30 +402,36 @@ See the details about initial dataset in table \ref{tab:test_data}.
   \end{tabular}
 \end{table}
 
-For the collected dataset, we use the benchmarking tool to measure basic block latency. We use AMD Ryzen 5 3600 CPU for measurements.
-We also capture basic block throughput estimations from the \textit{llvm-mca} tool. Figure \ref{pic:cov} shows the distribution of the coefficient
-of variation for the measured data. Figure \ref{pic:lift_chart} shows the lift chart for measured throughput values compared to \textit{llvm-mca}
-estimations. The mean squared error value for this experiment was $16.8$.
+We use AMD Ryzen 5 3600 CPU for measurements and capture basic block throughput
+estimations from the \textit{llvm-mca} tool.
 
-An example of mispredicted basic blocks can be found in appendix \ref{appendix:listings}. These examples show that \textit{llvm-mca}
-particularly struggles with stack instruction optimizations happening inside a processor core.
-
-\begin{figure}[h]
-  \caption{Distribution of coefficient of variation for unfiltered data capped at 5\%}
-  \centering
-  \label{pic:cov}
-  \includegraphics[width=0.9\columnwidth]{cov_distribution_zoom}
-\end{figure}
+\subsection{Results}
+Figure \ref{fig:cov} shows the distribution of the coefficient of variation for
+the measured data. Figure \ref{fig:lift_chart} shows the lift chart for measured
+throughput values compared to \textit{llvm-mca} estimations. The MSE for this
+experiment was $16.8$.
 
 \begin{figure}[h]
   \caption{Lift chart for measured values vs llvm\-mca estimations capped at 35 cycles per basic block}
   \centering
-  \label{pic:lift_chart}
+  \label{fig:lift_chart}
   \includegraphics[width=0.9\columnwidth]{lift_chart_35_cycles}
 \end{figure}
 
-Finally, we build a graph representation for each basic block in the dataset. Figure \ref{pic:sample_graph} shows
-an example of such a graph for a basic block snippet below.
+\begin{figure}[h]
+  \caption{Distribution of coefficient of variation for unfiltered data capped at 5\%}
+  \centering
+  \label{fig:cov}
+  \includegraphics[width=0.9\columnwidth]{cov_distribution_zoom}
+\end{figure}
+
+\subsection{Discussion}
+An example of mispredicted basic blocks can be found in Appendix \ref{appendix:listings}.
+These examples show that \textit{llvm-mca} particularly struggles with stack instruction
+optimizations happening inside a processor core.
+
+Finally, we build a graph representation for each basic block in the dataset. 
+Figure \ref{fig:sample_graph} shows an example of such a graph for a basic block snippet below.
 
 \begin{lstlisting}[title={Source of the sample basic block}]
 movq	%rdi, 16(%rsp)
@@ -252,11 +445,38 @@ movl	$1, %ecx
 \begin{figure}[h]
   \caption{Sample basic block graph. Source of origin: libxul. Measured cycles: 1.95.}
   \centering
-  \label{pic:sample_graph}
+  \label{fig:sample_graph}
   \includegraphics[width=0.4\columnwidth]{sample_graph}
 \end{figure}
 
 \section{Conclusion and future work}
 
-\todo{Write this section}
+Performance modeling is a cornerstone for optimizing compilers, yet existing models often 
+fall short in terms of accuracy and applicability across diverse architectures. This paper 
+has introduced an automated toolkit aimed at addressing these limitations. Our LLVM-based 
+approach for basic block extraction offers a more versatile and efficient alternative to existing 
+microbenchmarking tools, thereby expanding the scope of platforms that can be profiled and evaluated. 
 
+Our profiling tool builds upon existing methodologies to offer a robust and portable solution for 
+benchmarking of basic blocks. This tool is designed to minimize measurement variance, thereby 
+increasing the reliability of the collected data. Furthermore, we have developed a dataset construction 
+tool that transforms basic blocks into graph-based representations, laying the groundwork for future 
+research in deep learning-based cost models.
+
+Our contributions are threefold:
+\begin{itemize}
+    \item We provide an LLVM-based tool for efficient and versatile basic block extraction.
+    \item We introduce a robust profiling tool capable of benchmarking across multiple architectures.
+    \item We offer a dataset construction tool that enables the development of advanced cost models based on Graph Neural Networks.
+\end{itemize}
+
+We see the follwoing ways for future work:
+\begin{itemize}
+  \item Expand benchmarking tool to other CPU platforms. We used LLVM as a foundation for our 
+        toolkit and Linux perf APIs to collect performance data, meaning that adding a new CPU
+        platform is a logical next step.
+  \item Expand benchmarking tool to accelerator platforms, such as GPUs. The CPU benchmarking tool
+        heavily relies on memory mapping capabilities. Modern discrete GPUs also provide such a capability,
+        meaning that it is possible to use the same techique (with slight modifications) to perform benchmarking.
+  \item Building a deep learning-based model for static performance evaluation of the arbitrary code.
+\end{itemize}
