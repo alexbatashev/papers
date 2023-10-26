@@ -4,7 +4,7 @@ define_paper(
   name = "on_cpu_microbenchmarking",
   directory = "cpu_microbench",
   templates = ["ieee"],
-  title = "On micro-benchmarking of modern CPU architecture",
+  title = "Toolkit for micro-benchmarking of assembly basic blocks on modern CPU architectures",
   authors = [
       {
           "name": "Alexander Batashev",

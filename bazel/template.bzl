@@ -42,6 +42,7 @@ def define_paper(name, directory, templates, title, authors, class_options = {})
             "@bazel_latex//packages:listings",
             "@bazel_latex//packages:tikz",
             "@bazel_latex//packages:hyperref",
+            "@bazel_latex//packages:biblatex-ieee",
             "@//:references.bib",
         ]
 

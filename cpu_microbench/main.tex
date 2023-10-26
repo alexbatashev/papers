@@ -6,7 +6,7 @@ current vectorization cost model of LLVM framework has little correlation with r
 with a Pearson correlation coefficient of 0.55.
 
 This paper introduces an automated toolkit designed for data mining and analysis, aiming to assist 
-researchers in constructing more precise cost models.
+researchers in constructing more accurate cost models.
 
 \subsection{Basic block dataset collection}
 
@@ -22,9 +22,9 @@ RISC-V, Loongsoon, or external accelerators like GPUs. We propose an LLVM-based 
 blocks across various platforms, addressing the limitations identified in earlier research.
 
 \begin{figure}[h!]
+  \includegraphics[scale=0.5]{cpu_uarch.pdf}
   \centering
   \caption{A typical modern CPU micro-architecture}
-  \includegraphics[scale=0.5]{cpu_uarch.pdf}
 \end{figure}
 
 \subsection{Automatic basic block througput measurement}
@@ -84,39 +84,46 @@ scheduling\cite{laukemannAutomatedInstructionStream2018}. The paper introduces a
 for modern Intel and AMD micro-architectures by semi-automated benchmarking.
 
 Another tool that merits attention in the context of microbenchmarking and performance modeling is 
-LLVM-Exegesis \todo{exegesis link}. This tool is part of the LLVM compiler infrastructure and aims to 
+LLVM-Exegesis\footnote{\url{https://llvm.org/docs/CommandGuide/llvm-exegesis.html}}.
+This tool is part of the LLVM compiler infrastructure and aims to 
 empirically measure the latency and throughput of individual instructions on various CPU architectures. 
 It generates microbenchmarks for specific instruction sequences and executes them to gather performance 
 data. This empirical approach ensures high accuracy but is limited to the hardware on which the measurements
 are taken. It serves as a valuable resource for compiler optimization and can be complementary to other 
 methods that focus on predictive modeling.
 
+While the existing tools and approaches set the foundation for in-depth performance analysis of assembly
+code, they have some limitations in production applications. Specifically, these solutions are usually
+constrained to specific architectures or microarchitectures. Our work is aimed at bridging some of
+these gaps by providing a core infrastructure for automated benchmarking and processing of assembly
+basic blocks, based on open-source LLVM framework and public OS interfaces.
+
 \subsection{Contribution}
 
 In this work we present an automatic assembly basic block dataset collection tool. Specifically, we make 
 the following contributions:
 \begin{itemize}
-	\item An LLVM-based tool for basic block extraction, which automatically transforms binaries into a set 
-        of assembly files. This tool also performs basic filtering tasks, such as removing \textit{nop} 
+  \item \textit{An LLVM-based tool for basic block extraction, which automatically transforms binaries into a set 
+        of assembly files}. This tool also performs basic filtering tasks, such as removing \textit{nop} 
         padding or excluding basic blocks with no meaningful computation.
-	\item A profiling tool capable of benchmarking across multiple architectures. We demonstrate how to utilize
+  \item \textit{A profiling tool capable of benchmarking across multiple architectures.} We demonstrate how to utilize
         existing tools for benchmarking any basic block, ensuring minimal measurement variance. Practical 
         guidelines for setting up the profiling environment are also provided.
-	\item A dataset construction tool that employs LLVM to assess basic block dependencies, converting the 
-        data into a graph format. This dataset paves the way for the development of deep learning cost 
+  \item \textit{A dataset construction tool that employs LLVM to assess basic block dependencies, converting the 
+        data into a graph format.} This dataset paves the way for the development of deep learning cost 
         models utilizing Graph Neural Networks.
 \end{itemize}
 
 Figure \ref{fig:workflow} shows a complete workflow for the proposed toolkit.
 
 \begin{figure*}[h]
-  \caption{Complete toolkit workflow}
   \centering
-  \label{fig:workflow}
   \includegraphics[width=0.8\linewidth]{workflow}
+  \caption{Complete toolkit workflow}
+  \label{fig:workflow}
 \end{figure*}
 
-Our toolkit is open-source and available online: \url{https://github.com/perf-toolbox/llvm-ml}
+Our toolkit is open-source and available online\footnote{\url{https://github.com/perf-toolbox/llvm-ml}}.
 
 \section{Basic block extraction}
 
@@ -138,7 +145,7 @@ of instruction benchmarking. textit{llvm-exegesis} can either generate a so-call
 that can be used to estimate the number of available ports on the system, or a "serial" snippet, 
 that can be used to measure a single instruction latency. The serialization is achieved by redirecting 
 the output of the instruction to it's input and running that instruction in a loop. These two 
-methodologies allow to accurately describe some of the features of modern CPU architectures. 
+methodologies allow one to accurately describe some of the features of modern CPU architectures. 
 This data is used by \textit{llvm-mca} tool and LLVM compiler stack to drive some of its cost models. 
 A similar approach is taken by PMEvo tool, which can discover instruction port mapping using genetic 
 algorithms\cite{ritterPMEvoPortableInference2020}. However, as shown by later research, these artificial 
@@ -146,7 +153,8 @@ basic blocks do not allow researchers to reveal some of the more sophisticated o
 and micro fusion. Yishen Chen et al. \cite{chenBHiveBenchmarkSuite2019} have provided an estimation of 
 \textit{llvm-mca} tool relative error. Given a measured throughput $t$ and estimated throughput $t'$ a 
 relative error is defined as $err(t, t') = \frac{|t - t'|}{t}$. For \textit{llvm-mca} it has been found 
-that the maximum error value is 0.54.
+that the maximum relative error value is 0.54, which means that in worst-case scenario the estimation can
+be off by 54\%, which in turn can lead to a wrong decision being made by the compiler backend.
 
 \subsection{Dynamic extraction}
 
@@ -168,7 +176,7 @@ DynamoRIO then re-compiles these basic blocks and executes them natively. At the
 block a so-called \textit{context switch} happens, and DynamoRIO takes control back to determine and 
 prepare the next piece of executable.
 
-The benefits of dynamic basic block extraction is that it allows to extract data in the same form as 
+The benefits of dynamic basic block extraction is that it allows one to extract data in the same form as 
 CPUs see these instruction streams. Any branch that has not been taken during application execution 
 will not be added to the final dataset. This can be useful for binaries that contain hand-optimized 
 pieces of code or dynamically dispatched functions for uncommon ISA extensions.
@@ -199,7 +207,7 @@ use iterative algorithms to compute the result value, and thus their latency ful
 value residing in the input register. The toolkit also removes duplicates by converting all basic 
 blocks into graph representation and removing identical graphs. This allows us to also account for 
 similar basic blocks where automatic register allocation algorithms worked slightly differently. 
-While the graph representation also allows to remove isomorphic graphs, we're not doing that on purpose. 
+While the graph representation also allows us to remove isomorphic graphs, we're not doing that on purpose. 
 A different order of instructions may lead to different optimizations being triggered in the CPU pipeline 
 even though two code pieces may be functionally identical.
 
@@ -261,7 +269,7 @@ L1 cache for modern architectures.
         \renewcommand{\arraystretch}{1.3}
         \caption{A comparison of modern CPU micro-architectures cache size}
         \centering
-	\begin{tabular}{lllllll}
+	\begin{tabular}{lllrrrr}
 	        \hline
 		CPU name      & Manufacturer & ISA     & L1 Data cache, KB                        & L1 Instruction cache, KB & L2 cache, MB & L3 cache, MB \\
 		\hline
@@ -277,17 +285,25 @@ L1 cache for modern architectures.
 
 \subsection{Profiling methodology}
 
-Extracting timing information from modern superscalar pipelined architectures presents unique difficulties. Most contemporary CPUs are equipped with a Performance Monitoring Unit (PMU) comprising specialized registers and counters. These counters increment with each event occurrence and often encompass metrics such as the number of elapsed cycles, retired instructions, cache hits or misses, and more. Despite these capabilities, precisely mapping an event to a specific instruction proves challenging, since today's CPUs can decode, dispatch, and retire several instructions per cycle. Certain specialized hardware, such as Intel PEBS or AMD IBS, aims to address this challenge, but such features remain scarce, with very few chips offering this functionality\cite{bakhvalovPerformanceAnalysisTuning2020}.
+Extracting timing information from modern superscalar pipelined architectures presents unique difficulties.
+Most contemporary CPUs are equipped with a Performance Monitoring Unit (PMU) comprising specialized registers
+and counters. These counters increment with each event occurrence and often encompass metrics such as the 
+number of elapsed cycles, retired instructions, cache hits or misses, and more. Despite these capabilities, 
+precisely mapping an event to a specific instruction proves challenging, since today's CPUs can decode, 
+dispatch, and retire several instructions per cycle. Certain specialized hardware, such as Intel PEBS or 
+AMD IBS, aims to address this challenge, but such features remain scarce, with very few chips offering this 
+functionality\cite{bakhvalovPerformanceAnalysisTuning2020}.
 
 To overcome these limitations, we employ a formula suggested by Abel and Reineke\cite{abelUiCAAccurateThroughput2022}:
-
 \begin{equation}
-throughput(b) \approx \frac{cycles(b, n) - cycles(b, n')}{n - n'}
+throughput(b) \approx \frac{cycles(b, n) - cycles(b, n')}{n - n'},
   \label{eq:throughput}
 \end{equation}
-
-where $cycles(b, n)$ is the number of CPU cycles elapsed for a basic block unrolled with a factor of $n$, and $n < n'$. Essentially, we execute two sets of benchmark harnesses and calculate the difference between them. In this context, we refer to the shorter harness as noise and the longer one as workload. The value $n'$ is fixed and defined by user input, while $n$ is either fixed or dynamically determined by running noise harness and measuring its time $t$ in nanoseconds.
-$n = min(0.8 \times \frac{1000000 \times n'}{t}, MaxN)$.
+where $cycles(b, n)$ is the number of CPU cycles elapsed for a basic block unrolled with a factor of $n$,
+and $n < n'$. Essentially, we execute two sets of benchmark harnesses and calculate the difference between
+them. In this context, we refer to the shorter harness as noise and the longer one as workload. The value $n'$
+is fixed and defined by user input, while $n$ is either fixed or dynamically determined by running noise
+harness and measuring its time $t$ in nanoseconds. $n = min(0.8 \times \frac{1000000 \times n'}{t}, MaxN)$.
 
 This approach helps avoid L1 instruction cache misses by limiting the maximum number of iterations and 
 dynamically reducing execution time for larger basic blocks. The constant $1'000'000$ is chosen as a 
@@ -298,7 +314,7 @@ harness.
 
 In addition to the cycles counter, we collect the number of instructions retired, cache misses, and OS 
 context switches. Accessing these counters is done through a library we wrote called 
-\textit{libpmu}\footnote{Source code can be found at \url{https://github.com/perf-toolbox/libpmu}}. 
+\textit{libpmu}\footnote{\url{https://github.com/perf-toolbox/libpmu}}. 
 Designed as a cross-platform tool, \textit{libpmu} interfaces with Performance Monitoring Units (PMUs) 
 and even extends support to some unconventional architectures, such as SiFive's U74 core.
 
@@ -348,7 +364,7 @@ incorporating a virtual root node can aid in interpreting instruction performanc
 other instructions within the CPU's decoder or scheduler, even when no direct dependencies are evident. 
 If an instruction reads from and writes to the same register, a self-loop is added to the corresponding 
 node. A pseudocode outlining this graph construction algorithm is presented in a subsequent section. 
-We utilize an adjacency list to store the graph.
+We employ an adjacency list to store the graph.
 
 \subsection{Throughput Metrics}
 
@@ -362,15 +378,17 @@ $throughput = \frac{cycles}{N_{runs}}$.
 
 \subsection{Data Storage and Language Bindings}
 
-The entire dataset is serialized using the Cap'n'Proto format, allowing for language-agnostic usage. 
-To further facilitate use of the dataset, we provide bindings for both C++ and Python, thereby ensuring 
-seamless integration with popular deep learning frameworks. Below, we show the data structures employed 
-to encapsulate the graph, measurements, and the complete dataset.
+The entire dataset is serialized using the Cap'n'Proto format\footnote{\url{https://capnproto.org/}},
+allowing for language-agnostic usage. To further facilitate use of the dataset, we provide bindings for
+both C++ and Python, thereby ensuring seamless integration with popular deep learning frameworks. Figure
+\ref{fig:datastruct} shows the data structures employed to encapsulate the graph, measurements, and the
+complete dataset.
 
 \begin{figure}[h]
-  \caption{Data structures used by the dataset construction tool}
   \centering
   \includegraphics[width=0.9\columnwidth]{data_structures}
+  \caption{Data structures used by the dataset construction tool}
+  \label{fig:datastruct}
 \end{figure}
 
 \section{Evaluation}
@@ -390,42 +408,41 @@ shown in Table \ref{tab:test_data}.
 \begin{table}[htbp]
   \caption{Overview of test data}
   \label{tab:test_data}
-  \begin{tabular}{llll}
+  \begin{tabular}{lrrr}
   \hline
   Workload & \# of basic blocks & \# measured & \# filtered \\
   \hline
-  x264     & 80939              & 44388       & 30220       \\
-  libxul   & 436629             & 213733      & 158205      \\
-  Clang    & 365343             & 195410      & 143043      \\
-  OpenBLAS & 54865              & 25302       & 19673       \\
-  Total    & 937776             & 478833      & 351141
+  x264     & $80939$              & $44388$       & $30220$       \\
+  libxul   & $436629$             & $213733$      & $158205$      \\
+  Clang    & $365343$             & $195410$      & $143043$      \\
+  OpenBLAS & $54865$              & $25302$       & $19673$       \\
+  Total    & $937776$             & $478833$      & $351141$
   \end{tabular}
 \end{table}
 
 We use AMD Ryzen 5 3600 CPU for measurements and capture basic block throughput
 estimations from the \textit{llvm-mca} tool.
 
-\subsection{Results}
+\subsection{Results and discussion}
 Figure \ref{fig:cov} shows the distribution of the coefficient of variation for
 the measured data. Figure \ref{fig:lift_chart} shows the lift chart for measured
 throughput values compared to \textit{llvm-mca} estimations. The MSE for this
 experiment was $16.8$.
 
 \begin{figure}[h]
-  \caption{Lift chart for measured values vs llvm\-mca estimations capped at 35 cycles per basic block}
   \centering
-  \label{fig:lift_chart}
   \includegraphics[width=0.9\columnwidth]{lift_chart_35_cycles}
+  \caption{Lift chart for measured values vs \textit{llvm-mca} estimations capped at 35 cycles per basic block}
+  \label{fig:lift_chart}
 \end{figure}
 
 \begin{figure}[h]
-  \caption{Distribution of coefficient of variation for unfiltered data capped at 5\%}
   \centering
-  \label{fig:cov}
   \includegraphics[width=0.9\columnwidth]{cov_distribution_zoom}
+  \caption{Distribution of coefficient of variation for unfiltered data capped at 5\%}
+  \label{fig:cov}
 \end{figure}
 
-\subsection{Discussion}
 An example of mispredicted basic blocks can be found in Appendix \ref{appendix:listings}.
 These examples show that \textit{llvm-mca} particularly struggles with stack instruction
 optimizations happening inside a processor core.
@@ -443,10 +460,10 @@ movl	$1, %ecx
 \end{lstlisting}
 
 \begin{figure}[h]
-  \caption{Sample basic block graph. Source of origin: libxul. Measured cycles: 1.95.}
   \centering
-  \label{fig:sample_graph}
   \includegraphics[width=0.4\columnwidth]{sample_graph}
+  \caption{Sample basic block graph. Source of origin: libxul. Measured cycles: 1.95.}
+  \label{fig:sample_graph}
 \end{figure}
 
 \section{Conclusion and future work}

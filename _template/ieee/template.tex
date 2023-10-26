@@ -11,7 +11,12 @@
 \usepackage{xcolor}
 \usepackage{listings}
 \usepackage[hidelinks]{hyperref}
-\usepackage[backend=biber]{biblatex}
+\usepackage[backend=biber,style=ieee,url=false,isbn=false]{biblatex}
+
+\renewcommand*{\bibfont}{\footnotesize}
+\setlength{\biblabelsep}{\labelsep}
+\setlength{\bibitemsep}{\IEEEbibitemsep}
+
 \addbibresource{references.bib}
 
 \usepackage{_template/common}

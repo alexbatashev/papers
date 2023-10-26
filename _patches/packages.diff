@@ -2,7 +2,7 @@ diff --git a/packages/BUILD.bazel b/packages/BUILD.bazel
 index c798707..9277843 100644
 --- packages/BUILD.bazel
 +++ packages/BUILD.bazel
-@@ -28,6 +28,82 @@ latex_package(
+@@ -28,6 +28,90 @@ latex_package(
      tests = ["algorithm2e_test.tex"],
  )
  
@@ -60,6 +60,14 @@ index c798707..9277843 100644
 +    name = "tikzmark",
 +    srcs = [
 +        "@texlive_texmf__texmf-dist__tex__latex__tikzmark",
++    ],
++    tests = [],
++)
++
++latex_package(
++    name = "biblatex-ieee",
++    srcs = [
++        "@texlive_texmf__texmf-dist__tex__latex__biblatex-ieee",
 +    ],
 +    tests = [],
 +)
