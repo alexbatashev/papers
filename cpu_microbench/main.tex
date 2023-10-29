@@ -123,7 +123,7 @@ Figure \ref{fig:workflow} shows a complete workflow for the proposed toolkit.
   \label{fig:workflow}
 \end{figure*}
 
-Our toolkit is open-source and available online\footnote{\url{https://github.com/perf-toolbox/llvm-ml}}.
+Our toolkit is open-source and available online\footnote{\selflink{\url{https://github.com/perf-toolbox/llvm-ml}}}.
 
 \section{Basic block extraction}
 
@@ -317,7 +317,7 @@ harness.
 
 In addition to the cycles counter, we collect the number of instructions retired, cache misses, and OS 
 context switches. Accessing these counters is done through a library we wrote called 
-\textit{libpmu}\footnote{\url{https://github.com/perf-toolbox/libpmu}}. 
+\textit{libpmu}\footnote{\selflink{\url{https://github.com/perf-toolbox/libpmu}}}. 
 Designed as a cross-platform tool, \textit{libpmu} interfaces with Performance Monitoring Units (PMUs) 
 and even extends support to some unconventional architectures, such as SiFive's U74 core.
 
@@ -339,9 +339,20 @@ the testing environment to guarantee stable and reliable results. These prerequi
 system configurations to minimize variables that may introduce inconsistencies:
 
 \begin{itemize}
-	\item \textbf{Disabling Simultaneous Multiprocessing (SMT)}: Also known as Hyperthreading, disabling this feature ensures that multiple threads do not run on the same physical core simultaneously, thereby eliminating any interference. For Linux systems, this can be achieved by appending the \textit{nosmt} flag during the kernel boot process.
-	\item \textbf{Turning off frequency scaling and performance optimization features}: These system configurations need to be disabled on the host CPUs to prevent automatic adjustments that may skew results. By maintaining a constant frequency and eschewing other optimization features, we can attain a more controlled and consistent testing environment.
-	\item \textbf{Isolating CPU cores}: Isolation of CPU cores ensures that other processes running on the system do not interfere with the core's L1 cache, either by flushing or corrupting it. Our benchmarking tool is designed to bind the benchmark harness to specific threads, defined by user input, thereby achieving precise control. For Linux systems, core isolation can be implemented by passing the \textit{isolcpus=1,2,3,...,n} flag during kernel boot.
+	\item \textbf{Disabling Simultaneous Multiprocessing (SMT)}: Also known as Hyperthreading,
+	       disabling this feature ensures that multiple threads do not run on the same physical
+	       core simultaneously, thereby eliminating any interference. For Linux systems, this
+	       can be achieved by appending the \textit{nosmt} flag during the kernel boot process.
+	\item \textbf{Turning off frequency scaling and performance optimization features}: These
+	       system configurations need to be disabled on the host CPUs to prevent automatic
+	       adjustments that may skew results. By maintaining a constant frequency and eschewing
+	       other optimization features, we can attain a more controlled and consistent testing environment.
+	\item \textbf{Isolating CPU cores}: Isolation of CPU cores ensures that other processes
+	       running on the system do not interfere with the core's L1 cache, either by flushing
+	       or corrupting it. Our benchmarking tool is designed to bind the benchmark harness to
+	       specific threads, defined by user input, thereby achieving precise control. For Linux
+	       systems, core isolation can be implemented by passing the \textit{isolcpus=1,2,3,...,n}
+	       flag during kernel boot.
 \end{itemize}
 
 These precautions serve to create a more uniform testing environment, minimizing the potential for 
