@@ -1,7 +1,7 @@
 \section{Introduction}
 Performance modeling is a key to enabling many compiler optimizations. Vectorizers rely on cost models to 
 make decision on whether to apply optimization or not. However, it has been shown that current cost models
-are inaccurate and produce misleading results. Pohl et al.\cite{pohlPortableCostModeling2019} show that
+are inaccurate and produce misleading results. Pohl et al. \cite{pohlPortableCostModeling2019} show that
 current vectorization cost model of LLVM framework has little correlation with real-world measurements 
 with a Pearson correlation coefficient of 0.55.
 
@@ -15,22 +15,22 @@ of it. In terms of LLVM a basic block must end with a terminator, like a branch 
 procedure. However, in this research we also consider function calls or system calls to be basic block 
 terminators.
 
-While previous studies have utilized dynamic tracing tools like DynamoRIO\cite{chenBHiveBenchmarkSuite2019} 
+While previous studies have utilized dynamic tracing tools like DynamoRIO \cite{chenBHiveBenchmarkSuite2019} 
 to gather basic blocks, these methods are time-consuming and limited in platform support. For instance, 
-DynamoRIO supports x86, x64, ARM, and AArch64\cite{brueningInfrastructureAdaptiveDynamic2003} but not 
+DynamoRIO supports x86, x64, ARM, and AArch64 \cite{brueningInfrastructureAdaptiveDynamic2003} but not 
 RISC-V, Loongsoon, or external accelerators like GPUs. We propose an LLVM-based method to extract basic 
 blocks across various platforms, addressing the limitations identified in earlier research.
 
-\begin{figure}[h!]
-  \includegraphics[scale=0.5]{cpu_uarch.pdf}
-  \centering
-  \caption{A typical modern CPU microarchitecture}
-\end{figure}
+% \begin{figure}[h!]
+%   \includegraphics[scale=0.5]{cpu_uarch.pdf}
+%   \centering
+%   \caption{A typical modern CPU microarchitecture}
+% \end{figure}
 
-\subsection{Automatic basic block througput measurement}
+\subsection{Automatic basic block throughput measurement}
 
 Profiling arbitrary basic blocks poses significant challenges. Memory access within a basic block often 
-leads to segmentation faults. Yishen Chen et al.\cite{chenBHiveBenchmarkSuite2019} present a novel 
+leads to segmentation faults. Yishen Chen et al. \cite{chenBHiveBenchmarkSuite2019} present a novel 
 approach to deal with load or store instructions. They use process monitoring capabilities of the modern 
 operating systems and map physical memory pages onto a virtual address space to avoid segmentation faults. 
 Our methodology builds on this foundation, integrating LLVM target information to ensure portability 
@@ -52,7 +52,7 @@ seen significant advancements in recent years. A variety of approaches have been
 the challenges in accurately estimating the performance of basic blocks.
 
 One notable contribution is BHive, a benchmark suite and measurement framework designed specifically 
-for validating x86-64 basic block performance models\cite{chenBHiveBenchmarkSuite2019}. Existing 
+for validating x86-64 basic block performance models \cite{chenBHiveBenchmarkSuite2019}. Existing 
 benchmark suites often focus on application-level performance and are not tailored for low-level 
 basic block performance. BHive addresses this gap by providing a comprehensive set of basic blocks 
 that are representative of real-world applications. Additionally, it includes tools for automated 
@@ -60,7 +60,7 @@ measurement and validation, facilitating the comparison of different performance
 
 Focusing on recent Intel microarchitectures, uiCA presents a methodology that combines static analysis
 and machine learning techniques for accurate throughput prediction of basic 
-blocks\cite{abelUiCAAccurateThroughput2022}. Unlike approaches that aim for broad applicability, 
+blocks \cite{abelUiCAAccurateThroughput2022}. Unlike approaches that aim for broad applicability, 
 uiCA is optimized for high accuracy specifically on Intel CPUs. The authors demonstrate that their 
 methodology outperforms existing methods, particularly for complex instruction sequences common in 
 modern applications.
@@ -69,18 +69,18 @@ In contrast to traditional methods that rely on analytical models or table-based
 introduces a deep learning-based model for estimating basic block throughput. Traditional methods 
 often suffer from limitations such as inaccuracy or lack of portability across different microarchitectures.
 Ithemal addresses these issues by employing a deep neural network trained on a large dataset of basic
-blocks and their corresponding throughputs, measured on real hardware. This approach achieves high 
+blocks and their corresponding throughput values, measured on real hardware. This approach achieves high 
 accuracy and is portable across different CPU architectures.
 
 Kerncraft introduces an analytic performance modeling tool aimed at loop 
-kernels\cite{hammerKerncraftToolAnalytic2017}. The paper presents a tool that utilizes a roofline model 
+kernels \cite{hammerKerncraftToolAnalytic2017}. The paper presents a tool that utilizes a roofline model 
 to predict the performance of loop kernels on various CPU architectures. Kerncraft aims to provide insights
 into the performance bottlenecks and optimization opportunities for these critical sections of code.
 
 Automated Instruction Stream Throughput Prediction presents a Open Source Architecture Code Analyzer, 
 a static analysis tool for predicting the execution time of sequential loops comprising x86 instructions
 under the assumption of an infinite first-level cache and perfect out-of-order 
-scheduling\cite{laukemannAutomatedInstructionStream2018}. The paper introduces a machine model, tailored 
+scheduling \cite{laukemannAutomatedInstructionStream2018}. The paper introduces a machine model, tailored 
 for modern Intel and AMD microarchitectures by semi-automated benchmarking.
 
 Another tool that merits attention in the context of microbenchmarking and performance modeling is 
@@ -129,13 +129,13 @@ Our toolkit is open-source and available online\footnote{\selflink{\url{https://
 
 To provide accurate measurements of instruction latencies one must first prepare input data. There are 
 two primary approaches for doing that: generating an artificial dataset and extracting basic blocks from
-real-world programms.
+real-world programs.
 
 \subsection{Basic block generation}
 
 The first approach is taken by \textit{llmv-exegesis} tool. For each instruction in the ISA it can 
 generate multiple samples of assembly. Those are usually different by the generation strategy. 
-Modern desktop CPUs often employ out-of-order execution and pipelining, which allowes them to execute 
+Modern desktop CPUs often employ out-of-order execution and pipelining, which allows them to execute 
 multiple instructions at once, possibly, not in the order that these instructions are written in the 
 code. In practice, that means that the CPU pipeline will have a register renaming unit, re-order buffer, 
 and a scheduler, that can take an instruction from that buffer and dispatch it into a free port.
@@ -148,11 +148,11 @@ the output of the instruction to it's input and running that instruction in a lo
 methodologies allow one to accurately describe some of the features of modern CPU architectures. 
 This data is used by \textit{llvm-mca} and LLVM compiler stack to drive some of its cost models. 
 A similar approach is taken by PMEvo tool, which can discover instruction port mapping using genetic 
-algorithms\cite{ritterPMEvoPortableInference2020}. However, as shown by later research, these artificial 
+algorithms \cite{ritterPMEvoPortableInference2020}. However, as shown by later research, these artificial 
 basic blocks do not allow researchers to reveal some of the more sophisticated optimizations, like macro 
-and micro fusion. Yishen Chen et al.\cite{chenBHiveBenchmarkSuite2019} have provided an estimation of 
+and micro fusion. Yishen Chen et al. \cite{chenBHiveBenchmarkSuite2019} have provided an estimation of 
 the \textit{llvm-mca} tool relative error. Given a measured throughput $t$ and estimated throughput $t'$ a 
-relative error is defined as $err(t, t') = \frac{|t - t'|}{t}$. For \textit{llvm-mca} it has been found 
+relative error is defined as $\operatorname{err}(t, t') = \frac{|t - t'|}{t}$. For \textit{llvm-mca} it has been found 
 that the maximum relative error value is 0.54, which means that in worst-case scenario the estimation can
 be off by 54\%, which in turn can lead to a wrong decision being made by the compiler backend.
 
@@ -161,7 +161,7 @@ be off by 54\%, which in turn can lead to a wrong decision being made by the com
 Another approach, that is often used is extracting basic blocks from compiled binaries. A typical 
 approach would be to use a dynamic binary instrumentation tool to trace the actual execution of the 
 instructions. This is how Mendis et al. collect the dataset for training 
-Ithemal\cite{mendisIthemalAccuratePortable2019}.
+Ithemal \cite{mendisIthemalAccuratePortable2019}.
 
 These tools usually work by combining both disassembler and JIT compiler technology. For example, 
 DynamoRIO uses five-level intermediate representations to process disassembled basic blocks:
@@ -190,7 +190,7 @@ overhead. Furthermore, these tools aren't always available for target platforms.
 As an alternative for dynamic extraction, we propose to use LLVM built-in Target framework to 
 disassemble binaries and perform static analysis to clean up the data. To do so, we use the standard 
 LLVM disassembly interface, iterating over sections of the given binary and trying to decode every 
-instruction. We analyse each instruction in an online fashion. So-called \textit{nop} instructions are skipped 
+instruction. We analyze each instruction in an online fashion. So-called \textit{nop} instructions are skipped 
 at this stage. When disassembler meets a block terminator instruction, such as jump, call, system 
 call, or return, it flushes all previously disassembled instructions into an assembly text file, 
 clears the temporary buffer and increments basic block counter. After all sections are processed, 
@@ -201,7 +201,7 @@ Single-instruction basic blocks are not representative for the purpose of CPU sc
 This kind of basic blocks is better synthesized in a controlled fashion to uncover some instruction 
 properties, that are hard to infer with this kind of inputs. Memory processing-only basic blocks are 
 removed since modern CPUs can perform various kinds of optimizations, like move 
-elimination\cite{Intel64IA322022}, and thus are not representative either. Last, variable latency 
+elimination \cite{Intel64IA322022}, and thus are not representative either. Last, variable latency 
 instructions are also hard to accurately model. Instructions, such as division or square root, may 
 use iterative algorithms to compute the result value, and thus their latency fully depends on the 
 value residing in the input register. The toolkit also removes duplicates by converting all basic 
@@ -249,7 +249,7 @@ sub $-128, %rsp
 
 A fundamental obstacle in arbitrary basic block profiling is the handling of memory accesses, specifically 
 those related to unallocated memory, which can lead to process crashes. To address this issue, we adopt 
-the algorithm delineated by Chen et al.\cite{chenBHiveBenchmarkSuite2019}.
+the algorithm delineated by Chen et al. \cite{chenBHiveBenchmarkSuite2019}.
 
 The process begins with a test run of the target basic block prior to the initiation of the profiling 
 procedure. Should the process crash during this phase, the fault memory address is captured and added to 
@@ -295,18 +295,18 @@ number of elapsed cycles, retired instructions, cache hits or misses, and more. 
 precisely mapping an event to a specific instruction proves challenging, since today's CPUs can decode, 
 dispatch, and retire several instructions per cycle. Certain specialized hardware, such as Intel PEBS or 
 AMD IBS, aims to address this challenge, but such features remain scarce, with very few chips offering this 
-functionality\cite{bakhvalovPerformanceAnalysisTuning2020}.
+functionality \cite{bakhvalovPerformanceAnalysisTuning2020}.
 
-To overcome these limitations, we employ a formula suggested by Abel and Reineke\cite{abelUiCAAccurateThroughput2022}:
+To overcome these limitations, we employ a formula suggested by Abel and Reineke \cite{abelUiCAAccurateThroughput2022}:
 \begin{equation}
-throughput(b) \approx \frac{cycles(b, n) - cycles(b, n')}{n - n'},
+\operatorname{throughput}(b) \approx \frac{\operatorname{cycles}(b, n) - \operatorname{cycles}(b, n')}{n - n'},
   \label{eq:throughput}
 \end{equation}
-where $cycles(b, n)$ is the number of CPU cycles elapsed for a basic block unrolled with a factor of $n$,
+where $\operatorname{cycles}(b, n)$ is the number of CPU cycles elapsed for a basic block unrolled with a factor of $n$,
 and $n < n'$. Essentially, we execute two sets of benchmark harnesses and calculate the difference between
 them. In this context, we refer to the shorter harness as noise and the longer one as workload. The value $n'$
 is fixed and defined by user input, while $n$ is either fixed or dynamically determined by running noise
-harness and measuring its time $t$ in nanoseconds. $n = min(0.8 \times \frac{1000000 \times n'}{t}, MaxN)$.
+harness and measuring its time $t$ in nanoseconds. $n = \operatorname{min}(0.8 \times \frac{1000000 \times n'}{t}, \mathrm{MaxN})$.
 
 This approach helps avoid L1 instruction cache misses by limiting the maximum number of iterations and 
 dynamically reducing execution time for larger basic blocks. The constant $1'000'000$ is chosen as a 
@@ -385,10 +385,16 @@ We employ an adjacency list to store the graph.
 The metrics component encompasses an array of measurements collected during noise and workload runs, 
 along with the computed cycle counts and the actual number of basic block repetitions. The number of 
 cycles is calculated as
-$cycles = min(cycles^{workload}_i) - min(cycles^{noise}_j) \forall i, j$, while the number of runs 
-is derived as $N_{runs} = runs(argmin(cycles^{workload}_i)) - runs(argmin(cycles^{noise}_j)) \forall i, j$. 
+\[\mathrm{cycles} = \operatorname{min}(\mathrm{cycles}^{\mathrm{workload}}_i) - \operatorname{min}(\mathrm{cycles}^{\mathrm{noise}}_j) \quad ~\forall i, j,\] while the number of runs 
+is derived as 
+\begin{equation*}
+\begin{split}
+N_{\mathrm{runs}} = &\operatorname{runs}(\operatorname{argmin}(\mathrm{cycles}^{\mathrm{workload}}_i)) - \\
+  &\quad \operatorname{runs}(\operatorname{argmin}(\mathrm{cycles}^{\mathrm{noise}}_j)) \quad ~\forall i, j.
+\end{split}
+\end{equation*}
 Subsequently, the reciprocal throughput for the basic block can be computed as 
-$throughput = \frac{cycles}{N_{runs}}$.
+\[\mathrm{throughput} = \frac{\mathrm{cycles}}{N_{\mathrm{runs}}}.\]
 
 \subsection{Data Storage and Language Bindings}
 
