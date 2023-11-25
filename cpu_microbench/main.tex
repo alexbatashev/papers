@@ -371,14 +371,9 @@ node. Edges between nodes signify data dependencies. The opcode for each instruc
 an attribute of the respective node. Additionally, our dataset construction utility captures a set 
 of features for each instruction, such as whether it performs a memory load/store operation or vector 
 arithmetic. The utility further offers the flexibility to introduce a virtual root node or to connect 
-all nodes as a simple path, thereby enhancing compatibility with Graph Neural Networks (GNNs). Such 
-a structure is advantageous since many GNN layers operate on the premise of message passing and require 
-a connected graph to facilitate effective data flow. While other edges are usually present in the graph, 
-incorporating a virtual root node can aid in interpreting instruction performance as it can interact with 
-other instructions within the CPU's decoder or scheduler, even when no direct dependencies are evident. 
-If an instruction reads from and writes to the same register, a self-loop is added to the corresponding 
-node. A pseudocode outlining this graph construction algorithm is presented in a subsequent section. 
-We employ an adjacency list to store the graph.
+all nodes as a simple path. If an instruction reads from and writes to the same register, a 
+self-loop is added to the corresponding node. A pseudocode outlining this graph construction algorithm
+is presented in a subsequent section. We employ an adjacency list to store the graph.
 
 \subsection{Throughput Metrics}
 
