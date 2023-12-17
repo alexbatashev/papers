@@ -40,7 +40,7 @@ across diverse platforms.
 
 Our toolkit's final component is dedicated to dataset construction, comprising two main programs. 
 The first program processes text assembly files, converting them into a graph-based representation 
-suitable for deep neural networks like LSTM or GNNs. We refer to these graphs as embeddings. 
+suitable for further data analysis. We refer to these graphs as embeddings. 
 The second program integrates embeddings with measurement results to produce a comprehensive dataset. 
 Additionally, we offer a Python library to facilitate data analysis and ensure compatibility with 
 platforms like Pytorch.
@@ -110,8 +110,7 @@ the following contributions:
         existing tools for benchmarking any basic block, ensuring minimal measurement variance. Practical 
         guidelines for setting up the profiling environment are also provided.
   \item \textit{A dataset construction tool that employs LLVM to assess basic block dependencies, converting the 
-        data into a graph format.} This dataset paves the way for the development of deep learning cost 
-        models utilizing Graph Neural Networks.
+        data into a graph format.} This dataset paves the way for further data analysis.
 \end{itemize}
 
 Figure \ref{fig:workflow} shows a complete workflow for the proposed toolkit.
@@ -187,8 +186,8 @@ overhead. Furthermore, these tools aren't always available for target platforms.
 
 \subsection{Static extraction}
 
-As an alternative for dynamic extraction, we propose to use LLVM built-in Target framework to 
-disassemble binaries and perform static analysis to clean up the data. To do so, we use the standard 
+As an alternative for dynamic extraction, we propose to use LLVM built-in Target framework\footnote{\url{https://github.com/llvm/llvm-project/tree/main/llvm/lib/Target}}
+to disassemble binaries and perform static analysis to clean up the data. To do so, we use the standard 
 LLVM disassembly interface, iterating over sections of the given binary and trying to decode every 
 instruction. We analyze each instruction in an online fashion. So-called \textit{nop} instructions are skipped 
 at this stage. When disassembler meets a block terminator instruction, such as jump, call, system 
@@ -209,7 +208,12 @@ blocks into graph representation and removing identical graphs. This allows us t
 similar basic blocks where automatic register allocation algorithms worked slightly differently. 
 While the graph representation also allows us to remove isomorphic graphs, we're not doing that on purpose. 
 A different order of instructions may lead to different optimizations being triggered in the CPU pipeline 
-even though two code pieces may be functionally identical.
+even though two code pieces may be functionally identical. We also ignore some corner-casess, such as
+jump instructions pointing to a middle of a linear sequence of instructions. We consider these occurences
+unimportant for the purpose of our measurements. Another possibility to construct an initial set of basic
+blocks would be to analyze assembly coming directly out of the compiler. That would resolve some ambiguities
+imposed by the use of a disassembler tool. But at the same time the procedure would become more time-
+and resource-consuming, and we consider the benefits not worth the extra CPU cycles.
 
 \section{Profiling methodology}
 
@@ -265,26 +269,25 @@ be observed in real software, performance estimation tools generally operate on 
 that presuppose maximum parallelism.
 
 Simultaneously, with a standard page size of 4 KiB, the allocation of four pages of memory should fit 
-the L1 CPU cache appropriately. Refer to table \ref{tab:caches} to see the comparison of page size and 
-L1 cache for modern architectures.
+the L1 CPU cache appropriately. 
 
-\begin{table*}[!t]
-        \renewcommand{\arraystretch}{1.3}
-        \caption{A comparison of modern CPU microarchitectures cache size}
-        \centering
-	\begin{tabular}{lllrrrr}
-	        \hline
-		CPU name      & Manufacturer & ISA     & L1 Data cache, KB                        & L1 Instruction cache, KB & L2 cache, MB & L3 cache, MB \\
-		\hline
-		EPYC 9354P    & AMD          & x86\_64 & 32                                       & 32                       & 32           & 256          \\
-		Ryzen 9 7950X & AMD          & x86\_64 & 32                                       & 32                       & 16           & 64           \\
-		Ryzen 5 3600  & AMD          & x86\_64 & 32                                       & 32                       & 3            & 32           \\
-		i9-13900K     & Intel        & x86\_64 & 48                                       & 32                       & 2            & 36           \\
-		GH200         & NVIDIA       & AArch64 & 64                                       & 64                       & 1            & 117          \\
-		JH7110        & StarFive     & RISC-V  & 32                                       & 32                       & 2            & N/A
-	\end{tabular}
-        \label{tab:caches}
-\end{table*}
+% \begin{table*}[!t]
+%         \renewcommand{\arraystretch}{1.3}
+%         \caption{A comparison of modern CPU microarchitectures cache size}
+%         \centering
+% 	\begin{tabular}{lllrrrr}
+% 	        \hline
+% 		CPU name      & Manufacturer & ISA     & L1 Data cache, KB                        & L1 Instruction cache, KB & L2 cache, MB & L3 cache, MB \\
+% 		\hline
+% 		EPYC 9354P    & AMD          & x86\_64 & 32                                       & 32                       & 32           & 256          \\
+% 		Ryzen 9 7950X & AMD          & x86\_64 & 32                                       & 32                       & 16           & 64           \\
+% 		Ryzen 5 3600  & AMD          & x86\_64 & 32                                       & 32                       & 3            & 32           \\
+% 		i9-13900K     & Intel        & x86\_64 & 48                                       & 32                       & 2            & 36           \\
+% 		GH200         & NVIDIA       & AArch64 & 64                                       & 64                       & 1            & 117          \\
+% 		JH7110        & StarFive     & RISC-V  & 32                                       & 32                       & 2            & N/A
+% 	\end{tabular}
+%         \label{tab:caches}
+% \end{table*}
 
 \subsection{Profiling methodology}
 
@@ -373,7 +376,7 @@ of features for each instruction, such as whether it performs a memory load/stor
 arithmetic. The utility further offers the flexibility to introduce a virtual root node or to connect 
 all nodes as a simple path. If an instruction reads from and writes to the same register, a 
 self-loop is added to the corresponding node. A pseudocode outlining this graph construction algorithm
-is presented in a subsequent section. We employ an adjacency list to store the graph.
+is presented in Appendix \ref{appendix:algo}. We employ an adjacency list to store the graph.
 
 \subsection{Throughput Metrics}
 
@@ -395,7 +398,7 @@ Subsequently, the reciprocal throughput for the basic block can be computed as
 
 The entire dataset is serialized using the Cap'n'Proto format\footnote{\url{https://capnproto.org/}},
 allowing for language-agnostic usage. To further facilitate use of the dataset, we provide bindings for
-both C++ and Python, thereby ensuring seamless integration with popular deep learning frameworks. Figure
+both C++ and Python, thereby ensuring seamless integration with popular data analysis tools. Figure
 \ref{fig:datastruct} shows the data structures employed to encapsulate the graph, measurements, and the
 complete dataset.
 
@@ -509,7 +512,7 @@ Our contributions are threefold:
 \begin{itemize}
     \item We provide an LLVM-based tool for efficient and versatile basic block extraction.
     \item We introduce a robust profiling tool capable of benchmarking across multiple architectures.
-    \item We offer a dataset construction tool that enables the development of advanced cost models based on Graph Neural Networks.
+    \item We offer a dataset construction tool that enables advanced analysis of existing cost models.
 \end{itemize}
 
 We see the following ways for future work:
